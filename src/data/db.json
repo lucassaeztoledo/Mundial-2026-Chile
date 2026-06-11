@@ -1,0 +1,967 @@
+{
+  "groups": [
+    {
+      "name": "A",
+      "teams": [
+        "México",
+        "Sudáfrica",
+        "Corea del Sur",
+        "República Checa"
+      ]
+    },
+    {
+      "name": "B",
+      "teams": [
+        "Canadá",
+        "Bosnia-Herzegovina",
+        "Suiza",
+        "Qatar"
+      ]
+    },
+    {
+      "name": "C",
+      "teams": [
+        "Brasil",
+        "Marruecos",
+        "Haití",
+        "Escocia"
+      ]
+    },
+    {
+      "name": "D",
+      "teams": [
+        "Estados Unidos",
+        "Paraguay",
+        "Australia",
+        "Turquía"
+      ]
+    },
+    {
+      "name": "E",
+      "teams": [
+        "Alemania",
+        "Curazao",
+        "Costa de Marfil",
+        "Ecuador"
+      ]
+    },
+    {
+      "name": "F",
+      "teams": [
+        "Países Bajos",
+        "Japón",
+        "Suecia",
+        "Túnez"
+      ]
+    },
+    {
+      "name": "G",
+      "teams": [
+        "Bélgica",
+        "Egipto",
+        "Irán",
+        "Nueva Zelanda"
+      ]
+    },
+    {
+      "name": "H",
+      "teams": [
+        "España",
+        "Cabo Verde",
+        "Arabia Saudita",
+        "Uruguay"
+      ]
+    },
+    {
+      "name": "I",
+      "teams": [
+        "Francia",
+        "Senegal",
+        "Irak",
+        "Noruega"
+      ]
+    },
+    {
+      "name": "J",
+      "teams": [
+        "Argentina",
+        "Argelia",
+        "Austria",
+        "Jordania"
+      ]
+    },
+    {
+      "name": "K",
+      "teams": [
+        "Portugal",
+        "RD Congo",
+        "Uzbekistán",
+        "Colombia"
+      ]
+    },
+    {
+      "name": "L",
+      "teams": [
+        "Inglaterra",
+        "Croacia",
+        "Ghana",
+        "Panamá"
+      ]
+    }
+  ],
+  "matches": [
+    {
+      "date": "Jueves 11 de junio",
+      "team1": "México",
+      "team2": "Sudáfrica",
+      "group": "A",
+      "time": "15:00",
+      "location": "Estadio Azteca, Ciudad de México",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Jueves 11 de junio",
+      "team1": "Corea del Sur",
+      "team2": "República Checa",
+      "group": "A",
+      "time": "22:00",
+      "location": "Estadio Akron, Guadalajara",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Viernes 12 de junio",
+      "team1": "Canadá",
+      "team2": "Bosnia y Herzegovina",
+      "group": "B",
+      "time": "15:00",
+      "location": "BMO Field, Toronto",
+      "channels": [
+        "Chilevisión",
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Viernes 12 de junio",
+      "team1": "Estados Unidos",
+      "team2": "Paraguay",
+      "group": "D",
+      "time": "21:00",
+      "location": "SoFi Stadium, Los Ángeles",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Sábado 13 de junio",
+      "team1": "Qatar",
+      "team2": "Suiza",
+      "group": "B",
+      "time": "15:00",
+      "location": "Levi’s Stadium, San Francisco",
+      "channels": [
+        "Chilevisión",
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Sábado 13 de junio",
+      "team1": "Brasil",
+      "team2": "Marruecos",
+      "group": "C",
+      "time": "18:00",
+      "location": "MetLife Stadium, Nueva Jersey",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Sábado 13 de junio",
+      "team1": "Haití",
+      "team2": "Escocia",
+      "group": "C",
+      "time": "21:00",
+      "location": "Gillette Stadium, Boston",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Domingo 14 de junio",
+      "team1": "Australia",
+      "team2": "Turquía",
+      "group": "D",
+      "time": "00:00",
+      "location": "BC Place, Vancouver",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Domingo 14 de junio",
+      "team1": "Alemania",
+      "team2": "Curazao",
+      "group": "E",
+      "time": "13:00",
+      "location": "NRG Stadium, Houston",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Domingo 14 de junio",
+      "team1": "Países Bajos",
+      "team2": "Japón",
+      "group": "F",
+      "time": "16:00",
+      "location": "AT&T Stadium, Dallas",
+      "channels": [
+        "Chilevisión",
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Domingo 14 de junio",
+      "team1": "Costa de Marfil",
+      "team2": "Ecuador",
+      "group": "E",
+      "time": "19:00",
+      "location": "Lincoln Financial Field, Filadelfia",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Domingo 14 de junio",
+      "team1": "Suecia",
+      "team2": "Túnez",
+      "group": "F",
+      "time": "22:00",
+      "location": "Estadio BBVA, Monterrey",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Lunes 15 de junio",
+      "team1": "España",
+      "team2": "Cabo Verde",
+      "group": "H",
+      "time": "12:00",
+      "location": "Mercedes-Benz Stadium, Atlanta",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Lunes 15 de junio",
+      "team1": "Bélgica",
+      "team2": "Egipto",
+      "group": "G",
+      "time": "15:00",
+      "location": "Gillette Stadium, Boston",
+      "channels": [
+        "Chilevisión",
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Lunes 15 de junio",
+      "team1": "Arabia Saudita",
+      "team2": "Uruguay",
+      "group": "H",
+      "time": "18:00",
+      "location": "Hard Rock Stadium, Miami",
+      "channels": [
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Lunes 15 de junio",
+      "team1": "Irán",
+      "team2": "Nueva Zelanda",
+      "group": "G",
+      "time": "21:00",
+      "location": "SoFi Stadium, Los Ángeles",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Martes 16 de junio",
+      "team1": "Francia",
+      "team2": "Senegal",
+      "group": "I",
+      "time": "15:00",
+      "location": "MetLife Stadium, Nueva Jersey",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Martes 16 de junio",
+      "team1": "Irak",
+      "team2": "Noruega",
+      "group": "I",
+      "time": "18:00",
+      "location": "Gillette Stadium, Boston",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Martes 16 de junio",
+      "team1": "Argentina",
+      "team2": "Argelia",
+      "group": "J",
+      "time": "21:00",
+      "location": "Arrowhead Stadium, Kansas City",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Miércoles 17 de junio",
+      "team1": "Austria",
+      "team2": "Jordania",
+      "group": "J",
+      "time": "00:00",
+      "location": "Levi’s Stadium, San Francisco",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Miércoles 17 de junio",
+      "team1": "Portugal",
+      "team2": "RD Congo",
+      "group": "K",
+      "time": "13:00",
+      "location": "NRG Stadium, Houston",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Miércoles 17 de junio",
+      "team1": "Inglaterra",
+      "team2": "Croacia",
+      "group": "L",
+      "time": "16:00",
+      "location": "AT&T Stadium, Dallas",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Miércoles 17 de junio",
+      "team1": "Ghana",
+      "team2": "Panamá",
+      "group": "L",
+      "time": "19:00",
+      "location": "BMO Field, Toronto",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Miércoles 17 de junio",
+      "team1": "Uzbekistán",
+      "team2": "Colombia",
+      "group": "K",
+      "time": "19:00",
+      "location": "Estadio Azteca, Ciudad de México",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Jueves 18 de junio",
+      "team1": "República Checa",
+      "team2": "Sudáfrica",
+      "group": "A",
+      "time": "12:00",
+      "location": "Mercedes-Benz Stadium, Atlanta",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Jueves 18 de junio",
+      "team1": "Suiza",
+      "team2": "Bosnia y Herzegovina",
+      "group": "B",
+      "time": "15:00",
+      "location": "SoFi Stadium, Los Ángeles",
+      "channels": [
+        "Chilevisión",
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Jueves 18 de junio",
+      "team1": "Canadá",
+      "team2": "Qatar",
+      "group": "B",
+      "time": "18:00",
+      "location": "BC Place, Vancouver",
+      "channels": [
+        "Chilevisión",
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Jueves 18 de junio",
+      "team1": "México",
+      "team2": "Corea del Sur",
+      "group": "A",
+      "time": "22:00",
+      "location": "Estadio Akron, Guadalajara",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Viernes 19 de junio",
+      "team1": "Estados Unidos",
+      "team2": "Australia",
+      "group": "D",
+      "time": "18:00",
+      "location": "Lumen Field, Seattle",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Viernes 19 de junio",
+      "team1": "Escocia",
+      "team2": "Marruecos",
+      "group": "C",
+      "time": "18:00",
+      "location": "Gillette Stadium, Boston",
+      "channels": [
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Viernes 19 de junio",
+      "team1": "Haití",
+      "team2": "Brasil",
+      "group": "C",
+      "time": "20:30",
+      "location": "Lincoln Financial Field, Filadelfia",
+      "channels": [
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Viernes 19 de junio",
+      "team1": "Turquía",
+      "team2": "Paraguay",
+      "group": "D",
+      "time": "23:00",
+      "location": "Levi’s Stadium, San Francisco",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Sábado 20 de junio",
+      "team1": "Países Bajos",
+      "team2": "Suecia",
+      "group": "B",
+      "time": "13:00",
+      "location": "NRG Stadium, Houston",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Sábado 20 de junio",
+      "team1": "Alemania",
+      "team2": "Costa de Marfil",
+      "group": "E",
+      "time": "16:00",
+      "location": "BBMO Field, Toronto",
+      "channels": [
+        "Chilevisión",
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Sábado 20 de junio",
+      "team1": "Ecuador",
+      "team2": "Curazao",
+      "group": "E",
+      "time": "20:00",
+      "location": "Arrowhead Stadium, Kansas City",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Domingo 21 de junio",
+      "team1": "Túnez",
+      "team2": "Japón",
+      "group": "F",
+      "time": "13:00",
+      "location": "Estadio BBVA, Monterrey",
+      "channels": [
+        "Chilevisión",
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Domingo 21 de junio",
+      "team1": "España",
+      "team2": "Arabia Saudita",
+      "group": "H",
+      "time": "12:00",
+      "location": "Mercedes-Benz Stadium, Atlanta",
+      "channels": [
+        "Chilevisión",
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Domingo 21 de junio",
+      "team1": "Bélgica",
+      "team2": "Irán",
+      "group": "G",
+      "time": "15:00",
+      "location": "SoFi Stadium, Los Ángeles",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Domingo 21 de junio",
+      "team1": "Uruguay",
+      "team2": "Cabo Verde",
+      "group": "H",
+      "time": "18:00",
+      "location": "Hard Rock Stadium, Miami",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Domingo 21 de junio",
+      "team1": "Nueva Zelanda",
+      "team2": "Egipto",
+      "group": "G",
+      "time": "21:00",
+      "location": "BC Place, Vancouver",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Lunes 22 de junio",
+      "team1": "Argentina",
+      "team2": "Austria",
+      "group": "J",
+      "time": "13:00",
+      "location": "AT&T Stadium, Dallas",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Lunes 22 de junio",
+      "team1": "Francia",
+      "team2": "Irak",
+      "group": "I",
+      "time": "17:00",
+      "location": "Lincoln Financial Field, Filadelfia",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Lunes 22 de junio",
+      "team1": "Noruega",
+      "team2": "Senegal",
+      "group": "I",
+      "time": "20:00",
+      "location": "MetLife Stadium, Nueva Jersey",
+      "channels": [
+        "Chilevisión",
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Lunes 22 de junio",
+      "team1": "Jordania",
+      "team2": "Argelia",
+      "group": "J",
+      "time": "23:00",
+      "location": "Levi’s Stadium, San Francisco",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Martes 23 de junio",
+      "team1": "Portugal",
+      "team2": "Uzbekistán",
+      "group": "K",
+      "time": "13:00",
+      "location": "NRG Stadium, Houston",
+      "channels": [
+        "Chilevisión",
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Martes 23 de junio",
+      "team1": "Inglaterra",
+      "team2": "Ghana",
+      "group": "L",
+      "time": "16:00",
+      "location": "Gillette Stadium, Boston",
+      "channels": [
+        "Chilevisión",
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Martes 23 de junio",
+      "team1": "Panamá",
+      "team2": "Croacia",
+      "group": "L",
+      "time": "19:00",
+      "location": "BMO Field, Toronto",
+      "channels": [
+        "Chilevisión",
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Martes 23 de junio",
+      "team1": "Colombia",
+      "team2": "RD Congo",
+      "group": "K",
+      "time": "22:00",
+      "location": "Estadio Akron, Guadalajara",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Miércoles 24 de junio",
+      "team1": "Suiza",
+      "team2": "Canadá",
+      "group": "B",
+      "time": "15:00",
+      "location": "BC Place, Vancouver",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Miércoles 24 de junio",
+      "team1": "Bosnia y Herzegovina",
+      "team2": "Qatar",
+      "group": "B",
+      "time": "15:00",
+      "location": "Lumen Field, Seattle",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Miércoles 24 de junio",
+      "team1": "Brasil",
+      "team2": "Escocia",
+      "group": "C",
+      "time": "18:00",
+      "location": "Hard Rock Stadium, Miami",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Miércoles 24 de junio",
+      "team1": "Marruecos",
+      "team2": "Haití",
+      "group": "C",
+      "time": "18:00",
+      "location": "Mercedes-Benz Stadium, Atlanta",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Miércoles 24 de junio",
+      "team1": "México",
+      "team2": "República Checa",
+      "group": "A",
+      "time": "21:00",
+      "location": "Estadio Azteca, Ciudad de México",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Miércoles 24 de junio",
+      "team1": "Sudáfrica",
+      "team2": "Corea del Sur",
+      "group": "A",
+      "time": "21:00",
+      "location": "Estadio BBVA, Monterrey",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Jueves 25 de junio",
+      "team1": "Curazao",
+      "team2": "Costa de Marfil",
+      "group": "E",
+      "time": "16:00",
+      "location": "Lincoln Financial Field, Filadelfia",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Jueves 25 de junio",
+      "team1": "Ecuador",
+      "team2": "Alemania",
+      "group": "E",
+      "time": "16:00",
+      "location": "MetLife Stadium, Nueva Jersey",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Jueves 25 de junio",
+      "team1": "Japón",
+      "team2": "Suecia",
+      "group": "F",
+      "time": "19:00",
+      "location": "AT&T Stadium, Dallas",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Jueves 25 de junio",
+      "team1": "Túnez",
+      "team2": "Países Bajos",
+      "group": "F",
+      "time": "19:00",
+      "location": "Arrowhead Stadium, Kansas City",
+      "channels": [
+        "Chilevisión",
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Jueves 25 de junio",
+      "team1": "Turquía",
+      "team2": "Estados Unidos",
+      "group": "D",
+      "time": "22:00",
+      "location": "SoFi Stadium, Los Ángeles",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Jueves 25 de junio",
+      "team1": "Paraguay",
+      "team2": "Australia",
+      "group": "D",
+      "time": "22:00",
+      "location": "Levi’s Stadium, San Francisco",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Viernes 26 de junio",
+      "team1": "Noruega",
+      "team2": "Francia",
+      "group": "I",
+      "time": "15:00",
+      "location": "Gillette Stadium, Boston",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Viernes 26 de junio",
+      "team1": "Senegal",
+      "team2": "Irak",
+      "group": "I",
+      "time": "15:00",
+      "location": "BBMO Field, Toronto",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Viernes 26 de junio",
+      "team1": "Cabo Verde",
+      "team2": "Arabia Saudita",
+      "group": "H",
+      "time": "20:00",
+      "location": "NRG Stadium, Houston",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Viernes 26 de junio",
+      "team1": "Uruguay",
+      "team2": "España",
+      "group": "H",
+      "time": "20:00",
+      "location": "Estadio Akron, Guadalajara",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Viernes 26 de junio",
+      "team1": "Egipto",
+      "team2": "Irán",
+      "group": "G",
+      "time": "23:00",
+      "location": "Lumen Field, Seattle",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Viernes 26 de junio",
+      "team1": "Nueva Zelanda",
+      "team2": "Bélgica",
+      "group": "G",
+      "time": "23:00",
+      "location": "BC Place, Vancouver",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Sábado 27 de junio",
+      "team1": "Inglaterra",
+      "team2": "Panamá",
+      "group": "L",
+      "time": "17:00",
+      "location": "MetLife Stadium, Nueva Jersey",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Sábado 27 de junio",
+      "team1": "Croacia",
+      "team2": "Ghana",
+      "group": "L",
+      "time": "17:00",
+      "location": "Lincoln Financial Field, Filadelfia",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Sábado 27 de junio",
+      "team1": "Portugal",
+      "team2": "Colombia",
+      "group": "K",
+      "time": "19:30",
+      "location": "Hard Rock Stadium, Miami",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Sábado 27 de junio",
+      "team1": "RD Congo",
+      "team2": "Uzbekistán",
+      "group": "K",
+      "time": "19:30",
+      "location": "Mercedes-Benz Stadium, Atlanta",
+      "channels": [
+        "DirecTV"
+      ]
+    },
+    {
+      "date": "Sábado 27 de junio",
+      "team1": "Argentina",
+      "team2": "Jordania",
+      "group": "J",
+      "time": "22:00",
+      "location": "AT&T Stadium, Dallas",
+      "channels": [
+        "Chilevisión",
+        "DirecTV",
+        "Disney+"
+      ]
+    },
+    {
+      "date": "Sábado 27 de junio",
+      "team1": "Argelia",
+      "team2": "Austria",
+      "group": "J",
+      "time": "22:00",
+      "location": "Arrowhead Stadium, Kansas City",
+      "channels": [
+        "DirecTV"
+      ]
+    }
+  ]
+}
