@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import db from './data/db.json';
-import { normalizeString, getFlag } from './utils';
+import { normalizeString, getFlag, TEAM_ENG_TO_ESP } from './utils';
 
 function App() {
   const [activeTab, setActiveTab] = useState('partidos');
@@ -37,6 +37,50 @@ function App() {
     return () => clearInterval(timer);
   }, []);
 
+  const [apiMatches, setApiMatches] = useState([]);
+
+  useEffect(() => {
+    // Intentar cargar marcadores automáticos desde la Netlify Function
+    fetch('/.netlify/functions/get-results')
+      .then(res => {
+        if (!res.ok) throw new Error('Error al cargar marcadores remotos');
+        return res.json();
+      })
+      .then(data => {
+        if (Array.isArray(data)) {
+          setApiMatches(data);
+        }
+      })
+      .catch(err => {
+        console.warn('Usando base de datos estática como respaldo:', err);
+      });
+  }, []);
+
+  const mergedMatches = useMemo(() => {
+    return db.matches.map(match => {
+      // Buscar coincidencia en la API
+      const apiMatch = apiMatches.find(g => {
+        const homeEsp = TEAM_ENG_TO_ESP[g.home_team_name_en] || g.home_team_name_en;
+        const awayEsp = TEAM_ENG_TO_ESP[g.away_team_name_en] || g.away_team_name_en;
+        return (
+          normalizeString(homeEsp) === normalizeString(match.team1) &&
+          normalizeString(awayEsp) === normalizeString(match.team2)
+        );
+      });
+
+      if (apiMatch && apiMatch.time_elapsed !== 'notstarted') {
+        return {
+          ...match,
+          score1: apiMatch.home_score,
+          score2: apiMatch.away_score,
+          isLive: apiMatch.finished === 'FALSE',
+          timeElapsed: apiMatch.time_elapsed
+        };
+      }
+      return match;
+    });
+  }, [apiMatches]);
+
   // Fechas únicas para el calendario
   const uniqueDates = useMemo(() => {
     const dates = new Set();
@@ -47,7 +91,7 @@ function App() {
   const [visibleDates, setVisibleDates] = useState([uniqueDates[0]]); // Jueves 11 de junio por defecto
 
   const filteredMatches = useMemo(() => {
-    let matches = db.matches;
+    let matches = mergedMatches;
     
     // Filtro de búsqueda
     if (searchTerm.trim()) {
@@ -75,8 +119,8 @@ function App() {
   }, [searchTerm]);
 
   const finishedMatches = useMemo(() => {
-    return db.matches.filter(match => match.score1 !== undefined && match.score1 !== null);
-  }, []);
+    return mergedMatches.filter(match => match.score1 !== undefined && match.score1 !== null);
+  }, [mergedMatches]);
 
   const loadMoreDates = () => {
     const lastVisibleIndex = uniqueDates.indexOf(visibleDates[visibleDates.length - 1]);
@@ -140,7 +184,7 @@ function App() {
           <input 
             type="text" 
             className="search-input" 
-            placeholder="Busca a tu selección (ej. Chile, Brasil)..." 
+            placeholder="Busca la selección que quieras..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -196,21 +240,34 @@ function App() {
               {filteredMatches.length > 0 ? (
                 <>
                   <div className="matches-count-indicator">
-                    Mostrando <strong>{filteredMatches.length}</strong> de <strong>{db.matches.length}</strong> partidos de la fase de grupos
+                    Mostrando <strong>{filteredMatches.length}</strong> de <strong>{mergedMatches.length}</strong> partidos de la fase de grupos
                   </div>
                   <div className="calendar-list">
                     {filteredMatches.map((match, idx) => (
                       <div key={idx} className="match-card">
                         <div className="match-datetime">
                           <div className="match-date">{match.date}</div>
-                          <div className="match-time">{match.time} hrs</div>
+                          <div className="match-time-container">
+                            <span className="match-time">{match.time} hrs</span>
+                            {match.isLive && (
+                              <span className="live-badge">
+                                <span className="live-dot"></span> EN VIVO {match.timeElapsed}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         
                         <div className="match-teams">
                           <span className={`team-name ${normalizeString(match.team1).includes(normalizeString(searchTerm)) && searchTerm ? 'highlight' : ''}`}>
                             {getFlag(match.team1)} {match.team1}
                           </span>
-                          <span className="vs">vs</span>
+                          {match.score1 !== undefined ? (
+                            <span className="match-score-pill">
+                              {match.score1} - {match.score2}
+                            </span>
+                          ) : (
+                            <span className="vs">vs</span>
+                          )}
                           <span className={`team-name ${normalizeString(match.team2).includes(normalizeString(searchTerm)) && searchTerm ? 'highlight' : ''}`}>
                             {getFlag(match.team2)} {match.team2}
                           </span>

@@ -60,3 +60,30 @@ export function getFlag(teamName) {
   return FLAGS[normalized] || "🏳️";
 }
 
+export const TEAM_ENG_TO_ESP = {
+  "Mexico": "México", "South Africa": "Sudáfrica",
+  "South Korea": "Corea del Sur", "Czech Republic": "República Checa",
+  "Canada": "Canadá", "Bosnia and Herzegovina": "Bosnia y Herzegovina",
+  "Switzerland": "Suiza", "Qatar": "Qatar",
+  "Brazil": "Brasil", "Morocco": "Marruecos",
+  "Haiti": "Haití", "Scotland": "Escocia",
+  "United States": "Estados Unidos", "Paraguay": "Paraguay",
+  "Australia": "Australia", "Turkey": "Turquía",
+  "Germany": "Alemania", "Curaçao": "Curazao", "Curacao": "Curazao",
+  "Ivory Coast": "Costa de Marfil", "Ecuador": "Ecuador",
+  "Netherlands": "Países Bajos", "Japan": "Japón",
+  "Sweden": "Suecia", "Tunisia": "Túnez",
+  "Belgium": "Bélgica", "Egypt": "Egipto",
+  "Iran": "Irán", "New Zealand": "Nueva Zelanda",
+  "Spain": "España", "Cape Verde": "Cabo Verde",
+  "Saudi Arabia": "Arabia Saudita", "Uruguay": "Uruguay",
+  "France": "Francia", "Senegal": "Senegal",
+  "Iraq": "Irak", "Norway": "Noruega",
+  "Argentina": "Argentina", "Algeria": "Argelia",
+  "Austria": "Austria", "Jordan": "Jordania",
+  "Portugal": "Portugal", "DR Congo": "RD Congo",
+  "Uzbekistan": "Uzbekistán", "Colombia": "Colombia",
+  "England": "Inglaterra", "Croatia": "Croacia",
+  "Ghana": "Ghana", "Panama": "Panamá"
+};
+
