@@ -70,6 +70,7 @@ exports.handler = async function (event, context) {
             }) || [];
 
             return {
+              date: e.date || '',
               home_team_name_en: home.team?.name || home.team?.displayName || '',
               away_team_name_en: away.team?.name || away.team?.displayName || '',
               home_score: parseInt(home.score, 10) || 0,

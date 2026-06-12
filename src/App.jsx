@@ -589,8 +589,42 @@ function App() {
         
         const finished = m.finished === 'TRUE';
         const isLive = m.finished === 'FALSE' && m.time_elapsed !== 'notstarted';
-        const scoreString = (finished || isLive) ? `${m.home_score} - ${m.away_score}` : 'vs';
         
+        let dateStr = '';
+        let timeStr = '';
+        let isToday = false;
+
+        if (m.date) {
+          const matchDate = new Date(m.date);
+          const today = new Date();
+          
+          isToday = matchDate.getFullYear() === today.getFullYear() &&
+                    matchDate.getMonth() === today.getMonth() &&
+                    matchDate.getDate() === today.getDate();
+          
+          const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+          dateStr = `${matchDate.getDate()} ${months[matchDate.getMonth()]}`;
+          timeStr = matchDate.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
+        }
+
+        let statusText = '';
+        if (isLive) {
+          const elapsed = m.time_elapsed || 'Live';
+          if (elapsed.toLowerCase().includes('ht') || elapsed.toLowerCase().includes('half') || elapsed.toLowerCase().includes('entretiempo') || elapsed.toLowerCase().includes('mid')) {
+            statusText = 'ENTRETIEMPO ☕';
+          } else if (elapsed.toLowerCase().includes('live')) {
+            statusText = 'EN VIVO ⏱️';
+          } else {
+            statusText = `MIN ${elapsed}`;
+          }
+        } else if (finished) {
+          statusText = 'FINALIZADO 🏁';
+        } else {
+          statusText = isToday ? `HOY | ${timeStr}` : `${dateStr} | ${timeStr}`;
+        }
+
+        const scoreString = (finished || isLive) ? `${m.home_score} - ${m.away_score}` : 'vs';
+
         return {
           home: homeRes.name,
           homeFlag: homeRes.flag,
@@ -599,21 +633,37 @@ function App() {
           score: scoreString,
           isLive,
           finished,
-          time: m.time_elapsed
+          statusText,
+          isToday
         };
       });
     }
     
-    return db.matches.map(m => ({
-      home: m.team1,
-      homeFlag: getFlag(m.team1),
-      away: m.team2,
-      awayFlag: getFlag(m.team2),
-      score: 'vs',
-      isLive: false,
-      finished: false,
-      time: m.time
-    }));
+    return db.matches.map(m => {
+      const today = new Date();
+      const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+      const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+      const todayStr = `${days[today.getDay()]} ${today.getDate()} de ${months[today.getMonth()]}`;
+      
+      const isToday = m.date === todayStr;
+      
+      const parts = m.date.split(' ');
+      const dateStr = parts.length >= 3 ? `${parts[1]} ${parts[3].slice(0, 3)}` : m.date;
+      
+      const statusText = isToday ? `HOY | ${m.time}` : `${dateStr} | ${m.time}`;
+
+      return {
+        home: m.team1,
+        homeFlag: getFlag(m.team1),
+        away: m.team2,
+        awayFlag: getFlag(m.team2),
+        score: 'vs',
+        isLive: false,
+        finished: false,
+        statusText,
+        isToday
+      };
+    });
   }, [apiMatches, groupStandings, bestThirds]);
 
   // Statistics computation
@@ -808,7 +858,29 @@ function App() {
     return Array.from(dates);
   }, []);
 
-  const [visibleDates, setVisibleDates] = useState([uniqueDates[0]]); // Jueves 11 de junio por defecto
+  // Helper to construct today's date in local language format (e.g. "Viernes 12 de junio")
+  const getTodayDateString = () => {
+    const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    
+    const today = new Date();
+    const dayName = days[today.getDay()];
+    const dateNum = today.getDate();
+    const monthName = months[today.getMonth()];
+    
+    return `${dayName} ${dateNum} de ${monthName}`;
+  };
+
+  const getInitialDate = () => {
+    const todayStr = getTodayDateString();
+    if (uniqueDates.includes(todayStr)) {
+      return todayStr;
+    }
+    // Fallback to inaugural date if today's date is not in the calendar
+    return uniqueDates[0] || 'Jueves 11 de junio';
+  };
+
+  const [visibleDates, setVisibleDates] = useState([getInitialDate()]);
 
   const filteredMatches = useMemo(() => {
     let matches = mergedMatches;
@@ -861,6 +933,9 @@ function App() {
         <div className="ticker">
           {[...tickerGames, ...tickerGames].map((game, idx) => (
             <div className="ticker-item" key={idx}>
+              <span style={{ fontSize: '0.7rem', color: game.isLive ? '#ef4444' : '#64748b', marginRight: '0.55rem', fontWeight: 'bold' }}>
+                {game.statusText}
+              </span>
               {game.isLive && <span className="ticker-live-dot"></span>}
               <span>{game.homeFlag} {game.home}</span>
               {game.finished || game.isLive ? (
@@ -869,11 +944,6 @@ function App() {
                 <strong> {game.score} </strong>
               )}
               <span>{game.away} {game.awayFlag}</span>
-              {game.isLive && (
-                <span style={{ color: '#ef4444', marginLeft: '0.4rem', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                  {game.time}
-                </span>
-              )}
             </div>
           ))}
         </div>
@@ -1010,16 +1080,19 @@ function App() {
               <aside className="sidebar-calendar">
                 <h3>Filtro por días</h3>
                 <ul className="calendar-days-list">
-                  {uniqueDates.map(date => (
-                    <li key={date}>
-                      <button 
-                        className={`calendar-day-btn ${visibleDates.length === 1 && visibleDates[0] === date ? 'selected' : ''}`}
-                        onClick={() => selectSpecificDate(date)}
-                      >
-                        {date}
-                      </button>
-                    </li>
-                  ))}
+                  {uniqueDates.map(date => {
+                    const isToday = date === getTodayDateString();
+                    return (
+                      <li key={date}>
+                        <button 
+                          className={`calendar-day-btn ${visibleDates.length === 1 && visibleDates[0] === date ? 'selected' : ''}`}
+                          onClick={() => selectSpecificDate(date)}
+                        >
+                          {date}{isToday ? ' (Hoy)' : ''}
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
               </aside>
             )}

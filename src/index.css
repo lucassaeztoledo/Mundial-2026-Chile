@@ -1203,7 +1203,7 @@ body {
 .ticker {
   display: flex;
   white-space: nowrap;
-  animation: marquee 45s linear infinite;
+  animation: marquee 120s linear infinite;
 }
 
 .ticker:hover {
