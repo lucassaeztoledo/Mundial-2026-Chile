@@ -851,8 +851,8 @@ body {
   overflow-x: auto;
   margin-top: 1rem;
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(30, 41, 59, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .standings-table {
@@ -874,15 +874,27 @@ body {
   text-transform: uppercase;
   font-size: 0.75rem;
   letter-spacing: 0.5px;
+  background: rgba(15, 23, 42, 0.4);
 }
 
 .standings-table td {
-  color: #cbd5e1;
+  color: #f8fafc;
+}
+
+.standings-table tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.standings-table tr:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.standings-table tr:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
 .standings-table tr:hover td {
   color: #fff;
-  background: rgba(255, 255, 255, 0.02);
 }
 
 .pos-col {
