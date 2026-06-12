@@ -180,6 +180,68 @@ function MatchCard({ match, searchTerm, isExpanded, onToggleExpand }) {
   );
 }
 
+function BracketMatch({ match, matchNumber, resolveTeamName }) {
+  if (!match) {
+    return (
+      <div className="bracket-match-card">
+        <div className="bracket-match-info">
+          <span>P. {matchNumber}</span>
+          <span>Por definir</span>
+        </div>
+        <div className="bracket-team">
+          <span className="bracket-team-name">🏳️ Por definir</span>
+        </div>
+        <div className="bracket-team">
+          <span className="bracket-team-name">🏳️ Por definir</span>
+        </div>
+      </div>
+    );
+  }
+
+  const team1Resolved = resolveTeamName(match.home_team_name_en);
+  const team2Resolved = resolveTeamName(match.away_team_name_en);
+
+  const score1 = (match.finished === 'TRUE' || match.time_elapsed !== 'notstarted') ? match.home_score : undefined;
+  const score2 = (match.finished === 'TRUE' || match.time_elapsed !== 'notstarted') ? match.away_score : undefined;
+
+  const isLive = match.finished === 'FALSE' && match.time_elapsed !== 'notstarted';
+
+  // Determine winner for class highlighting
+  let team1IsWinner = false;
+  let team2IsWinner = false;
+  if (match.finished === 'TRUE') {
+    if (match.home_score > match.away_score) team1IsWinner = true;
+    else if (match.away_score > match.home_score) team2IsWinner = true;
+  }
+
+  return (
+    <div className="bracket-match-card">
+      <div className="bracket-match-info">
+        <span>P. {matchNumber}</span>
+        <span className="bracket-match-venue" title={match.venue}>{match.venue || 'Por definir'}</span>
+      </div>
+      <div className={`bracket-team ${team1IsWinner ? 'winner' : ''}`}>
+        <span className="bracket-team-name">
+          {team1Resolved.flag} {team1Resolved.name}
+          {team1Resolved.slot && <span className="bracket-team-slot"> ({team1Resolved.slot})</span>}
+        </span>
+        {score1 !== undefined && (
+          <span className="bracket-team-score">{score1}</span>
+        )}
+      </div>
+      <div className={`bracket-team ${team2IsWinner ? 'winner' : ''}`}>
+        <span className="bracket-team-name">
+          {team2Resolved.flag} {team2Resolved.name}
+          {team2Resolved.slot && <span className="bracket-team-slot"> ({team2Resolved.slot})</span>}
+        </span>
+        {score2 !== undefined && (
+          <span className="bracket-team-score">{score2}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState('partidos');
   const [searchTerm, setSearchTerm] = useState('');
@@ -274,6 +336,197 @@ function App() {
       return match;
     });
   }, [apiMatches]);
+
+  // Standings computation
+  const groupStandings = useMemo(() => {
+    const standings = {};
+    
+    // Initialize groups
+    db.groups.forEach(g => {
+      standings[g.name] = g.teams.map(teamName => ({
+        team: teamName,
+        pj: 0,
+        pg: 0,
+        pe: 0,
+        pp: 0,
+        gf: 0,
+        gc: 0,
+        dg: 0,
+        pts: 0
+      }));
+    });
+
+    // Populate stats from matches
+    mergedMatches.forEach(match => {
+      if (match.group && match.score1 !== undefined && match.score1 !== null) {
+        const groupList = standings[match.group];
+        if (groupList) {
+          const t1 = groupList.find(t => t.team === match.team1);
+          const t2 = groupList.find(t => t.team === match.team2);
+          if (t1 && t2) {
+            const s1 = parseInt(match.score1, 10);
+            const s2 = parseInt(match.score2, 10);
+            
+            t1.pj += 1;
+            t2.pj += 1;
+            t1.gf += s1;
+            t1.gc += s2;
+            t2.gf += s2;
+            t2.gc += s1;
+            
+            if (s1 > s2) {
+              t1.pg += 1;
+              t1.pts += 3;
+              t2.pp += 1;
+            } else if (s1 < s2) {
+              t2.pg += 1;
+              t2.pts += 3;
+              t1.pp += 1;
+            } else {
+              t1.pe += 1;
+              t1.pts += 1;
+              t2.pe += 1;
+              t2.pts += 1;
+            }
+          }
+        }
+      }
+    });
+
+    // Sort and calculate dg
+    Object.keys(standings).forEach(letter => {
+      standings[letter].forEach(t => {
+        t.dg = t.gf - t.gc;
+      });
+      
+      standings[letter].sort((a, b) => {
+        if (b.pts !== a.pts) return b.pts - a.pts;
+        if (b.dg !== a.dg) return b.dg - a.dg;
+        if (b.gf !== a.gf) return b.gf - a.gf;
+        return a.team.localeCompare(b.team);
+      });
+    });
+
+    return standings;
+  }, [mergedMatches]);
+
+  const bestThirds = useMemo(() => {
+    const thirds = [];
+    Object.keys(groupStandings).forEach(letter => {
+      const teamStat = groupStandings[letter][2]; // 3rd place team
+      if (teamStat) {
+        thirds.push({
+          ...teamStat,
+          groupName: letter
+        });
+      }
+    });
+
+    return thirds.sort((a, b) => {
+      if (b.pts !== a.pts) return b.pts - a.pts;
+      if (b.dg !== a.dg) return b.dg - a.dg;
+      if (b.gf !== a.gf) return b.gf - a.gf;
+      return a.team.localeCompare(b.team);
+    });
+  }, [groupStandings]);
+
+  // Helper to resolve team names and flags for knockout stages
+  const resolveTeamName = (teamNameEn) => {
+    if (!teamNameEn) return { name: 'Por definir', flag: '🏳️', slot: '' };
+
+    const cleanName = teamNameEn.trim();
+
+    // 1. Check direct Spanish mapping
+    if (TEAM_ENG_TO_ESP[cleanName]) {
+      const espName = TEAM_ENG_TO_ESP[cleanName];
+      return { name: espName, flag: getFlag(espName), slot: '' };
+    }
+
+    // If it's a real team name not in mapping, but not a placeholder
+    const isPlaceholder = cleanName.includes('Winner') || 
+                          cleanName.includes('Place') || 
+                          cleanName.includes('Loser') || 
+                          cleanName.includes('Round of') || 
+                          cleanName.includes('Quarterfinal') || 
+                          cleanName.includes('Semifinal');
+
+    if (!isPlaceholder) {
+      return { name: cleanName, flag: getFlag(cleanName), slot: '' };
+    }
+
+    // 2. Parse Winner of Group
+    const winnerMatch = cleanName.match(/Group ([A-L]) Winner/i);
+    if (winnerMatch) {
+      const letter = winnerMatch[1];
+      const stand = groupStandings[letter];
+      const slotLabel = `1° Grupo ${letter}`;
+      if (stand && stand[0]) {
+        const groupHasStarted = stand.some(t => t.pj > 0);
+        if (groupHasStarted) {
+          const team = stand[0].team;
+          return { name: team, flag: getFlag(team), slot: slotLabel };
+        }
+      }
+      return { name: slotLabel, flag: '🏳️', slot: '' };
+    }
+
+    // 3. Parse 2nd Place of Group
+    const secondMatch = cleanName.match(/Group ([A-L]) 2nd Place/i);
+    if (secondMatch) {
+      const letter = secondMatch[1];
+      const stand = groupStandings[letter];
+      const slotLabel = `2° Grupo ${letter}`;
+      if (stand && stand[1]) {
+        const groupHasStarted = stand.some(t => t.pj > 0);
+        if (groupHasStarted) {
+          const team = stand[1].team;
+          return { name: team, flag: getFlag(team), slot: slotLabel };
+        }
+      }
+      return { name: slotLabel, flag: '🏳️', slot: '' };
+    }
+
+    // 4. Parse Third Place combinations
+    const thirdMatch = cleanName.match(/Third Place Group ([A-L\/]+)/i);
+    if (thirdMatch) {
+      const combos = thirdMatch[1]; // e.g. "A/B/C/D/F"
+      const groupLetters = combos.split('/');
+      const slotLabel = `3° Grupo ${combos}`;
+      
+      const qualifiedThirds = bestThirds.slice(0, 8);
+      const candidates = qualifiedThirds.filter(t => groupLetters.includes(t.groupName) && t.pj > 0);
+      
+      if (candidates.length > 0) {
+        const selected = candidates[0];
+        return { name: selected.team, flag: getFlag(selected.team), slot: slotLabel };
+      }
+      return { name: slotLabel, flag: '🏳️', slot: '' };
+    }
+
+    // 5. Winners of previous knockout stages
+    const r32Winner = cleanName.match(/Round of 32 (\d+) Winner/i);
+    if (r32Winner) {
+      return { name: `Ganador 16avos ${r32Winner[1]}`, flag: '🏳️', slot: '' };
+    }
+    const r16Winner = cleanName.match(/Round of 16 (\d+) Winner/i);
+    if (r16Winner) {
+      return { name: `Ganador Octavos ${r16Winner[1]}`, flag: '🏳️', slot: '' };
+    }
+    const qfWinner = cleanName.match(/Quarterfinal (\d+) Winner/i);
+    if (qfWinner) {
+      return { name: `Ganador Cuartos ${qfWinner[1]}`, flag: '🏳️', slot: '' };
+    }
+    const sfWinner = cleanName.match(/Semifinal (\d+) Winner/i);
+    if (sfWinner) {
+      return { name: `Ganador Semifinal ${sfWinner[1]}`, flag: '🏳️', slot: '' };
+    }
+    const sfLoser = cleanName.match(/Semifinal (\d+) Loser/i);
+    if (sfLoser) {
+      return { name: `Perdedor Semifinal ${sfLoser[1]}`, flag: '🏳️', slot: '' };
+    }
+
+    return { name: cleanName, flag: '🏳️', slot: '' };
+  };
 
   // Fechas únicas para el calendario
   const uniqueDates = useMemo(() => {
@@ -370,6 +623,7 @@ function App() {
           <button className={`tab-btn ${activeTab === 'partidos' ? 'active' : ''}`} onClick={() => setActiveTab('partidos')}>partidos</button>
           <button className={`tab-btn ${activeTab === 'grupos' ? 'active' : ''}`} onClick={() => setActiveTab('grupos')}>grupos</button>
           <button className={`tab-btn ${activeTab === 'resultados' ? 'active' : ''}`} onClick={() => setActiveTab('resultados')}>resultados</button>
+          <button className={`tab-btn ${activeTab === 'fase-eliminatoria' ? 'active' : ''}`} onClick={() => setActiveTab('fase-eliminatoria')}>fase eliminatoria</button>
         </div>
       </header>
 
@@ -391,18 +645,61 @@ function App() {
             <h2 className="section-title">Grupos</h2>
             {filteredGroups.length > 0 ? (
               <div className="groups-grid">
-                {filteredGroups.map(group => (
-                  <div key={group.name} className="group-card">
-                    <div className="group-header">Grupo {group.name}</div>
-                    <ul className="team-list">
-                      {group.teams.map(team => (
-                        <li key={team} className="team-item">
-                          {getFlag(team)} {team}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+                {filteredGroups.map(group => {
+                  const standings = groupStandings[group.name] || [];
+                  return (
+                    <div key={group.name} className="group-card">
+                      <div className="group-header">Grupo {group.name}</div>
+                      <div className="standings-table-container">
+                        <table className="standings-table">
+                          <thead>
+                            <tr>
+                              <th className="pos-col">#</th>
+                              <th>Selección</th>
+                              <th className="num-col">PJ</th>
+                              <th className="num-col hide-mobile">G</th>
+                              <th className="num-col hide-mobile">E</th>
+                              <th className="num-col hide-mobile">P</th>
+                              <th className="num-col hide-mobile">GF</th>
+                              <th className="num-col hide-mobile">GC</th>
+                              <th className="num-col hide-mobile">DG</th>
+                              <th className="pts-col">Pts</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {standings.map((teamStat, index) => {
+                              let rowClass = '';
+                              if (index < 2) rowClass = 'qualified-direct';
+                              else if (index === 2) rowClass = 'qualified-thirds';
+                              
+                              return (
+                                <tr key={teamStat.team} className={rowClass}>
+                                  <td className="pos-col">{index + 1}</td>
+                                  <td>
+                                    <div className="team-col">
+                                      <span>{getFlag(teamStat.team)}</span>
+                                      <span title={teamStat.team} style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>
+                                        {teamStat.team}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  <td className="num-col">{teamStat.pj}</td>
+                                  <td className="num-col hide-mobile">{teamStat.pg}</td>
+                                  <td className="num-col hide-mobile">{teamStat.pe}</td>
+                                  <td className="num-col hide-mobile">{teamStat.pp}</td>
+                                  <td className="num-col hide-mobile">{teamStat.gf}</td>
+                                  <td className="num-col hide-mobile">{teamStat.gc}</td>
+                                  <td className="num-col hide-mobile">{teamStat.dg > 0 ? `+${teamStat.dg}` : teamStat.dg}</td>
+                                  <td className="pts-col">{teamStat.pts}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div className="empty-state">No se encontraron grupos con esa selección.</div>
@@ -501,6 +798,151 @@ function App() {
                 </div>
               </div>
             )}
+          </section>
+        )}
+
+        {activeTab === 'fase-eliminatoria' && (
+          <section className="bracket-section">
+            <h2 className="section-title">Fase Eliminatoria</h2>
+            <div className="bracket-scroll-hint">
+              ← Desliza horizontalmente para ver las llaves →
+            </div>
+            
+            <div className="bracket-wrapper">
+              <div className="bracket-container">
+                {/* 1. Round of 32 Left */}
+                <div className="bracket-column">
+                  <div className="bracket-column-title">Dieciseisavos (Izq)</div>
+                  <div className="bracket-column-matches">
+                    <BracketMatch match={apiMatches[72]} matchNumber={1} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[74]} matchNumber={3} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[73]} matchNumber={2} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[76]} matchNumber={5} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[82]} matchNumber={11} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[83]} matchNumber={12} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[80]} matchNumber={9} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[81]} matchNumber={10} resolveTeamName={resolveTeamName} />
+                  </div>
+                </div>
+
+                {/* 2. Round of 16 Left */}
+                <div className="bracket-column">
+                  <div className="bracket-column-title">Octavos (Izq)</div>
+                  <div className="bracket-column-matches">
+                    <BracketMatch match={apiMatches[88]} matchNumber={17} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[89]} matchNumber={18} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[92]} matchNumber={21} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[93]} matchNumber={22} resolveTeamName={resolveTeamName} />
+                  </div>
+                </div>
+
+                {/* 3. Quarterfinals Left */}
+                <div className="bracket-column">
+                  <div className="bracket-column-title">Cuartos (Izq)</div>
+                  <div className="bracket-column-matches">
+                    <BracketMatch match={apiMatches[96]} matchNumber={25} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[97]} matchNumber={26} resolveTeamName={resolveTeamName} />
+                  </div>
+                </div>
+
+                {/* 4. Semifinals Left */}
+                <div className="bracket-column">
+                  <div className="bracket-column-title">Semifinal (Izq)</div>
+                  <div className="bracket-column-matches">
+                    <BracketMatch match={apiMatches[100]} matchNumber={29} resolveTeamName={resolveTeamName} />
+                  </div>
+                </div>
+
+                {/* 5. Center Column: Trophy, Champion & Final */}
+                <div className="bracket-center-column">
+                  <div className="trophy-container">
+                    <div className="trophy-glow"></div>
+                    <img src="/world_cup_trophy.png" alt="Copa del Mundo" className="trophy-image" />
+                  </div>
+
+                  {/* Champion Banner */}
+                  <div className="champion-card">
+                    <div className="champion-title">Campeón del Mundo</div>
+                    {apiMatches[103] && apiMatches[103].finished === 'TRUE' ? (
+                      (() => {
+                        const winnerEn = apiMatches[103].home_score > apiMatches[103].away_score 
+                          ? apiMatches[103].home_team_name_en 
+                          : apiMatches[103].away_team_name_en;
+                        const winner = resolveTeamName(winnerEn);
+                        return (
+                          <div className="champion-team">
+                            {winner.flag} {winner.name} 🏆
+                          </div>
+                        );
+                      })()
+                    ) : (
+                      <div className="champion-team" style={{ color: '#94a3b8', fontSize: '1rem', fontWeight: '500' }}>
+                        Por definir 🏆
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Grand Final Box */}
+                  <div>
+                    <div className="bracket-column-title" style={{ border: 'none', marginBottom: '0.25rem' }}>Gran Final</div>
+                    <div className="bracket-match-card final-match-box">
+                      <BracketMatch match={apiMatches[103]} matchNumber={32} resolveTeamName={resolveTeamName} />
+                    </div>
+                  </div>
+
+                  {/* Third Place Box */}
+                  <div>
+                    <div className="bracket-column-title" style={{ border: 'none', marginBottom: '0.25rem', color: '#94a3b8' }}>Tercer Lugar</div>
+                    <div className="bracket-match-card third-place-box">
+                      <BracketMatch match={apiMatches[102]} matchNumber={31} resolveTeamName={resolveTeamName} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 6. Semifinals Right */}
+                <div className="bracket-column">
+                  <div className="bracket-column-title">Semifinal (Der)</div>
+                  <div className="bracket-column-matches">
+                    <BracketMatch match={apiMatches[101]} matchNumber={30} resolveTeamName={resolveTeamName} />
+                  </div>
+                </div>
+
+                {/* 7. Quarterfinals Right */}
+                <div className="bracket-column">
+                  <div className="bracket-column-title">Cuartos (Der)</div>
+                  <div className="bracket-column-matches">
+                    <BracketMatch match={apiMatches[98]} matchNumber={27} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[99]} matchNumber={28} resolveTeamName={resolveTeamName} />
+                  </div>
+                </div>
+
+                {/* 8. Round of 16 Right */}
+                <div className="bracket-column">
+                  <div className="bracket-column-title">Octavos (Der)</div>
+                  <div className="bracket-column-matches">
+                    <BracketMatch match={apiMatches[90]} matchNumber={19} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[91]} matchNumber={20} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[95]} matchNumber={24} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[94]} matchNumber={23} resolveTeamName={resolveTeamName} />
+                  </div>
+                </div>
+
+                {/* 9. Round of 32 Right */}
+                <div className="bracket-column">
+                  <div className="bracket-column-title">Dieciseisavos (Der)</div>
+                  <div className="bracket-column-matches">
+                    <BracketMatch match={apiMatches[75]} matchNumber={4} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[77]} matchNumber={6} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[78]} matchNumber={7} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[79]} matchNumber={8} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[84]} matchNumber={13} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[86]} matchNumber={15} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[85]} matchNumber={14} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={apiMatches[87]} matchNumber={16} resolveTeamName={resolveTeamName} />
+                  </div>
+                </div>
+              </div>
+            </div>
           </section>
         )}
       </main>

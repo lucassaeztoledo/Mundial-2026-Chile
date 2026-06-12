@@ -845,3 +845,323 @@ body {
 .stat-bar.away-bar {
   background: var(--gradient-end);
 }
+
+/* Standings Table Styles */
+.standings-table-container {
+  overflow-x: auto;
+  margin-top: 1rem;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.standings-table th, 
+.standings-table td {
+  padding: 0.75rem 0.6rem;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.standings-table th {
+  font-weight: 600;
+  color: var(--primary);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+.standings-table td {
+  color: #cbd5e1;
+}
+
+.standings-table tr:hover td {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.pos-col {
+  width: 30px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.team-col {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.num-col {
+  text-align: center;
+  width: 40px;
+}
+
+.pts-col {
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  width: 45px;
+}
+
+/* Color coding for qualified zones */
+.standings-table tr.qualified-direct td.pos-col {
+  color: var(--primary);
+  border-left: 3px solid var(--primary);
+}
+
+.standings-table tr.qualified-thirds td.pos-col {
+  color: var(--gradient-start);
+  border-left: 3px solid var(--gradient-start);
+}
+
+/* Bracket Styles */
+.bracket-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  padding: 1.5rem 0;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 3rem;
+  background: rgba(30, 41, 59, 0.2);
+  border-radius: 20px;
+  border: 1px solid var(--card-border);
+}
+
+.bracket-scroll-hint {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .bracket-scroll-hint {
+    display: block;
+  }
+}
+
+.bracket-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 1750px;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.bracket-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: 900px;
+  flex: 1;
+}
+
+.bracket-column-title {
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--primary);
+  letter-spacing: 1.5px;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 1rem;
+}
+
+.bracket-column-matches {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: 100%;
+}
+
+.bracket-match-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 0.75rem;
+  width: 200px;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.bracket-match-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  background: rgba(30, 41, 59, 0.8);
+}
+
+.bracket-match-info {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-bottom: 0.4rem;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 0.2rem;
+}
+
+.bracket-match-venue {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
+}
+
+.bracket-team {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+  font-weight: 500;
+  color: #cbd5e1;
+}
+
+.bracket-team.winner {
+  color: #fff;
+  font-weight: 700;
+}
+
+.bracket-team-name {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.bracket-team-score {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  min-width: 20px;
+  text-align: center;
+}
+
+.bracket-team.winner .bracket-team-score {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--primary);
+}
+
+.bracket-team-slot {
+  font-size: 0.65rem;
+  color: #64748b;
+  font-weight: 400;
+}
+
+/* Center Column */
+.bracket-center-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 900px;
+  width: 300px;
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.trophy-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.trophy-image {
+  width: 130px;
+  height: auto;
+  filter: drop-shadow(0 0 20px rgba(234, 179, 8, 0.4));
+  animation: float 4s ease-in-out infinite;
+}
+
+.trophy-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(234, 179, 8, 0.18) 0%, transparent 70%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+
+.champion-card {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  box-shadow: 0 0 25px rgba(234, 179, 8, 0.2);
+  border-radius: 16px;
+  padding: 1rem;
+  width: 240px;
+  animation: pulse-glow 3s infinite;
+}
+
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 15px rgba(234, 179, 8, 0.15); }
+  50% { box-shadow: 0 0 30px rgba(234, 179, 8, 0.35); }
+  100% { box-shadow: 0 0 15px rgba(234, 179, 8, 0.15); }
+}
+
+.champion-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #eab308;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 0.5rem;
+}
+
+.champion-team {
+  font-size: 1.25rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.final-match-box {
+  width: 250px;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+}
+
+.third-place-box {
+  width: 220px;
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px dashed var(--card-border);
+}
+
+/* Hide intermediate stats on mobile screens */
+@media (max-width: 640px) {
+  .hide-mobile {
+    display: none;
+  }
+  .standings-table th, 
+  .standings-table td {
+    padding: 0.6rem 0.4rem;
+  }
+}
