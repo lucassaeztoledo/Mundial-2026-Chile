@@ -2,7 +2,7 @@ const https = require('https');
 
 exports.handler = async function (event, context) {
   return new Promise((resolve) => {
-    const url = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/news';
+    const url = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/news?lang=es&cc=es';
 
     https.get(url, (res) => {
       let rawData = '';

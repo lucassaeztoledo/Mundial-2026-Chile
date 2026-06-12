@@ -242,6 +242,24 @@ function BracketMatch({ match, matchNumber, resolveTeamName }) {
   );
 }
 
+const parseSpanishDate = (spanishDateStr) => {
+  if (!spanishDateStr) return null;
+  const parts = spanishDateStr.split(' ');
+  if (parts.length < 4) return null;
+  const dayNum = parseInt(parts[1], 10);
+  const monthName = parts[3].toLowerCase();
+  
+  const months = {
+    'enero': 0, 'febrero': 1, 'marzo': 2, 'abril': 3, 'mayo': 4, 'junio': 5,
+    'julio': 6, 'agosto': 7, 'septiembre': 8, 'octubre': 9, 'noviembre': 10, 'diciembre': 11
+  };
+  
+  const monthNum = months[monthName];
+  if (monthNum === undefined) return null;
+  
+  return new Date(2026, monthNum, dayNum);
+};
+
 function App() {
   const [activeTab, setActiveTab] = useState('partidos');
   const [searchTerm, setSearchTerm] = useState('');
@@ -582,8 +600,9 @@ function App() {
 
   // Ticker Games computation
   const tickerGames = useMemo(() => {
+    let list = [];
     if (apiMatches && apiMatches.length > 0) {
-      return apiMatches.map(m => {
+      list = apiMatches.map(m => {
         const homeRes = resolveTeamName(m.home_team_name_en);
         const awayRes = resolveTeamName(m.away_team_name_en);
         
@@ -593,9 +612,11 @@ function App() {
         let dateStr = '';
         let timeStr = '';
         let isToday = false;
+        let dateObj = null;
 
         if (m.date) {
-          const matchDate = new Date(m.date);
+          dateObj = new Date(m.date);
+          const matchDate = dateObj;
           const today = new Date();
           
           isToday = matchDate.getFullYear() === today.getFullYear() &&
@@ -634,76 +655,65 @@ function App() {
           isLive,
           finished,
           statusText,
-          isToday
+          isToday,
+          dateObj
+        };
+      });
+    } else {
+      list = db.matches.map(m => {
+        const today = new Date();
+        const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        const todayStr = `${days[today.getDay()]} ${today.getDate()} de ${months[today.getMonth()]}`;
+        
+        const isToday = m.date === todayStr;
+        const dateObj = parseSpanishDate(m.date);
+        
+        const parts = m.date.split(' ');
+        const dateStr = parts.length >= 3 ? `${parts[1]} ${parts[3].slice(0, 3)}` : m.date;
+        
+        const statusText = isToday ? `HOY | ${m.time}` : `${dateStr} | ${m.time}`;
+
+        return {
+          home: m.team1,
+          homeFlag: getFlag(m.team1),
+          away: m.team2,
+          awayFlag: getFlag(m.team2),
+          score: 'vs',
+          isLive: false,
+          finished: false,
+          statusText,
+          isToday,
+          dateObj
         };
       });
     }
-    
-    return db.matches.map(m => {
-      const today = new Date();
-      const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-      const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-      const todayStr = `${days[today.getDay()]} ${today.getDate()} de ${months[today.getMonth()]}`;
-      
-      const isToday = m.date === todayStr;
-      
-      const parts = m.date.split(' ');
-      const dateStr = parts.length >= 3 ? `${parts[1]} ${parts[3].slice(0, 3)}` : m.date;
-      
-      const statusText = isToday ? `HOY | ${m.time}` : `${dateStr} | ${m.time}`;
 
-      return {
-        home: m.team1,
-        homeFlag: getFlag(m.team1),
-        away: m.team2,
-        awayFlag: getFlag(m.team2),
-        score: 'vs',
-        isLive: false,
-        finished: false,
-        statusText,
-        isToday
-      };
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    const filteredList = list.filter(item => {
+      if (item.isLive) return true;
+      if (!item.dateObj) return true;
+
+      const itemDate = new Date(item.dateObj.getFullYear(), item.dateObj.getMonth(), item.dateObj.getDate());
+      const diffTime = itemDate.getTime() - todayStart.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+      return diffDays >= -2 && diffDays <= 3;
     });
+
+    if (filteredList.length === 0) {
+      return list;
+    }
+    return filteredList;
   }, [apiMatches, groupStandings, bestThirds]);
 
   // Statistics computation
   const stats = useMemo(() => {
     const scorersMap = {};
-    const assistsMap = {};
     const cleanSheetsMap = {};
     const cardsMap = {}; // player -> { yellow, red, team }
-
-    const defaultScorers = [
-      { player: 'Kylian Mbappé', team: 'Francia', value: 5, games: 4 },
-      { player: 'Erling Haaland', team: 'Noruega', value: 4, games: 3 },
-      { player: 'Vinícius Júnior', team: 'Brasil', value: 4, games: 4 },
-      { player: 'Lionel Messi', team: 'Argentina', value: 3, games: 3 },
-      { player: 'Harry Kane', team: 'Inglaterra', value: 3, games: 4 }
-    ];
-
-    const defaultAssists = [
-      { player: 'Kevin De Bruyne', team: 'Bélgica', value: 4, games: 3 },
-      { player: 'Lionel Messi', team: 'Argentina', value: 3, games: 3 },
-      { player: 'Bruno Fernandes', team: 'Portugal', value: 3, games: 4 },
-      { player: 'Antoine Griezmann', team: 'Francia', value: 3, games: 4 },
-      { player: 'Jamal Musiala', team: 'Alemania', value: 2, games: 3 }
-    ];
-
-    const defaultCleanSheets = [
-      { player: 'Thibaut Courtois', team: 'Bélgica', value: 3, games: 3 },
-      { player: 'Emiliano Martínez', team: 'Argentina', value: 2, games: 3 },
-      { player: 'Alisson Becker', team: 'Brasil', value: 2, games: 4 },
-      { player: 'Marc-André ter Stegen', team: 'Alemania', value: 2, games: 3 },
-      { player: 'Jordan Pickford', team: 'Inglaterra', value: 2, games: 4 }
-    ];
-
-    const defaultCards = [
-      { player: 'Cristian Romero', team: 'Argentina', yellow: 2, red: 1, games: 3 },
-      { player: 'Casemiro', team: 'Brasil', yellow: 3, red: 0, games: 4 },
-      { player: 'Antonio Rüdiger', team: 'Alemania', yellow: 2, red: 0, games: 3 },
-      { player: 'Pepe', team: 'Portugal', yellow: 2, red: 0, games: 4 },
-      { player: 'Gavi', team: 'España', yellow: 2, red: 0, games: 3 }
-    ];
 
     const teamGoalkeepers = {
       'Argentina': 'Emiliano Martínez',
@@ -723,6 +733,21 @@ function App() {
       'Países Bajos': 'Bart Verbruggen',
       'Croacia': 'Dominik Livaković',
       'Noruega': 'Ørjan Nyland'
+    };
+
+    const getTeamPlayedGames = (teamName) => {
+      let count = 0;
+      if (apiMatches && apiMatches.length > 0) {
+        apiMatches.forEach(match => {
+          const homeTeam = resolveTeamName(match.home_team_name_en).name;
+          const awayTeam = resolveTeamName(match.away_team_name_en).name;
+          const isPlayed = match.finished === 'TRUE' || match.time_elapsed !== 'notstarted';
+          if (isPlayed && (homeTeam === teamName || awayTeam === teamName)) {
+            count++;
+          }
+        });
+      }
+      return count || 1;
     };
 
     if (apiMatches && apiMatches.length > 0) {
@@ -777,7 +802,7 @@ function App() {
       player,
       team: scorersMap[player].team,
       value: scorersMap[player].goals,
-      games: 1
+      games: getTeamPlayedGames(scorersMap[player].team)
     }));
 
     const liveCleanSheets = Object.keys(cleanSheetsMap).map(player => {
@@ -786,7 +811,7 @@ function App() {
         player,
         team,
         value: cleanSheetsMap[player],
-        games: 1
+        games: getTeamPlayedGames(team)
       };
     });
 
@@ -795,52 +820,23 @@ function App() {
       team: cardsMap[player].team,
       yellow: cardsMap[player].yellow,
       red: cardsMap[player].red,
-      games: 1
+      games: getTeamPlayedGames(cardsMap[player].team)
     }));
 
     const getTop5Scorers = () => {
-      const merged = [...defaultScorers];
-      liveScorers.forEach(ls => {
-        const existing = merged.find(m => m.player.toLowerCase() === ls.player.toLowerCase());
-        if (existing) {
-          existing.value += ls.value;
-        } else {
-          merged.push(ls);
-        }
-      });
-      return merged.sort((a, b) => b.value - a.value).slice(0, 5);
+      return [...liveScorers].sort((a, b) => b.value - a.value).slice(0, 5);
     };
 
     const getTop5Assists = () => {
-      const merged = [...defaultAssists];
-      return merged.sort((a, b) => b.value - a.value).slice(0, 5);
+      return [];
     };
 
     const getTop5CleanSheets = () => {
-      const merged = [...defaultCleanSheets];
-      liveCleanSheets.forEach(lcs => {
-        const existing = merged.find(m => m.player.toLowerCase() === lcs.player.toLowerCase());
-        if (existing) {
-          existing.value += lcs.value;
-        } else {
-          merged.push(lcs);
-        }
-      });
-      return merged.sort((a, b) => b.value - a.value).slice(0, 5);
+      return [...liveCleanSheets].sort((a, b) => b.value - a.value).slice(0, 5);
     };
 
     const getTop5Cards = () => {
-      const merged = [...defaultCards];
-      liveCards.forEach(lc => {
-        const existing = merged.find(m => m.player.toLowerCase() === lc.player.toLowerCase());
-        if (existing) {
-          existing.yellow += lc.yellow;
-          existing.red += lc.red;
-        } else {
-          merged.push(lc);
-        }
-      });
-      return merged.sort((a, b) => (b.red * 3 + b.yellow) - (a.red * 3 + a.yellow)).slice(0, 5);
+      return [...liveCards].sort((a, b) => (b.red * 3 + b.yellow) - (a.red * 3 + a.yellow)).slice(0, 5);
     };
 
     return {
@@ -1332,22 +1328,28 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {stats.scorers.map((p, idx) => (
-                      <tr key={idx}>
-                        <td>
-                          <div className="player-col">
-                            <span className="player-name">{p.player}</span>
-                            <span className="player-team">{getFlag(p.team)} {p.team}</span>
-                          </div>
-                        </td>
-                        <td className="stats-num-col">{p.value}</td>
-                        <td className="stats-meta-col">{p.games}</td>
+                    {stats.scorers.length === 0 ? (
+                      <tr>
+                        <td colSpan="3" className="stats-empty">Sin registros aún</td>
                       </tr>
-                    ))}
+                    ) : (
+                      stats.scorers.map((p, idx) => (
+                        <tr key={idx}>
+                          <td>
+                            <div className="player-col">
+                              <span className="player-name">{p.player}</span>
+                              <span className="player-team">{getFlag(p.team)} {p.team}</span>
+                            </div>
+                          </td>
+                          <td className="stats-num-col">{p.value}</td>
+                          <td className="stats-meta-col">{p.games}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
-
+ 
               {/* 2. Asistidores */}
               <div className="stats-card">
                 <h3 className="stats-card-title">👟 Asistidores</h3>
@@ -1360,22 +1362,28 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {stats.assists.map((p, idx) => (
-                      <tr key={idx}>
-                        <td>
-                          <div className="player-col">
-                            <span className="player-name">{p.player}</span>
-                            <span className="player-team">{getFlag(p.team)} {p.team}</span>
-                          </div>
-                        </td>
-                        <td className="stats-num-col">{p.value}</td>
-                        <td className="stats-meta-col">{p.games}</td>
+                    {stats.assists.length === 0 ? (
+                      <tr>
+                        <td colSpan="3" className="stats-empty">Sin registros aún</td>
                       </tr>
-                    ))}
+                    ) : (
+                      stats.assists.map((p, idx) => (
+                        <tr key={idx}>
+                          <td>
+                            <div className="player-col">
+                              <span className="player-name">{p.player}</span>
+                              <span className="player-team">{getFlag(p.team)} {p.team}</span>
+                            </div>
+                          </td>
+                          <td className="stats-num-col">{p.value}</td>
+                          <td className="stats-meta-col">{p.games}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
-
+ 
               {/* 3. Vallas Invictas */}
               <div className="stats-card">
                 <h3 className="stats-card-title">🧤 Vallas Invictas</h3>
@@ -1388,22 +1396,28 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {stats.cleanSheets.map((p, idx) => (
-                      <tr key={idx}>
-                        <td>
-                          <div className="player-col">
-                            <span className="player-name">{p.player}</span>
-                            <span className="player-team">{getFlag(p.team)} {p.team}</span>
-                          </div>
-                        </td>
-                        <td className="stats-num-col">{p.value}</td>
-                        <td className="stats-meta-col">{p.games}</td>
+                    {stats.cleanSheets.length === 0 ? (
+                      <tr>
+                        <td colSpan="3" className="stats-empty">Sin registros aún</td>
                       </tr>
-                    ))}
+                    ) : (
+                      stats.cleanSheets.map((p, idx) => (
+                        <tr key={idx}>
+                          <td>
+                            <div className="player-col">
+                              <span className="player-name">{p.player}</span>
+                              <span className="player-team">{getFlag(p.team)} {p.team}</span>
+                            </div>
+                          </td>
+                          <td className="stats-num-col">{p.value}</td>
+                          <td className="stats-meta-col">{p.games}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
-
+ 
               {/* 4. Disciplina */}
               <div className="stats-card">
                 <h3 className="stats-card-title">🟨 Disciplina</h3>
@@ -1416,18 +1430,24 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {stats.cards.map((p, idx) => (
-                      <tr key={idx}>
-                        <td>
-                          <div className="player-col">
-                            <span className="player-name">{p.player}</span>
-                            <span className="player-team">{getFlag(p.team)} {p.team}</span>
-                          </div>
-                        </td>
-                        <td className="stats-num-col" style={{ color: '#eab308' }}>{p.yellow}</td>
-                        <td className="stats-num-col" style={{ color: '#ef4444' }}>{p.red}</td>
+                    {stats.cards.length === 0 ? (
+                      <tr>
+                        <td colSpan="3" className="stats-empty">Sin registros aún</td>
                       </tr>
-                    ))}
+                    ) : (
+                      stats.cards.map((p, idx) => (
+                        <tr key={idx}>
+                          <td>
+                            <div className="player-col">
+                              <span className="player-name">{p.player}</span>
+                              <span className="player-team">{getFlag(p.team)} {p.team}</span>
+                            </div>
+                          </td>
+                          <td className="stats-num-col" style={{ color: '#eab308' }}>{p.yellow}</td>
+                          <td className="stats-num-col" style={{ color: '#ef4444' }}>{p.red}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

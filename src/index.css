@@ -1203,7 +1203,7 @@ body {
 .ticker {
   display: flex;
   white-space: nowrap;
-  animation: marquee 120s linear infinite;
+  animation: marquee 250s linear infinite;
 }
 
 .ticker:hover {
@@ -1263,6 +1263,14 @@ body {
   grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
   gap: 2rem;
   margin-bottom: 4rem;
+}
+
+.stats-empty {
+  text-align: center;
+  padding: 2.5rem 1rem !important;
+  color: #64748b;
+  font-style: italic;
+  font-size: 0.9rem;
 }
 
 @media (max-width: 968px) {
