@@ -647,3 +647,201 @@ body {
     justify-content: center;
   }
 }
+
+/* Scorers Row in Match Card */
+.match-scorers-row {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: -0.5rem;
+  padding: 0 1rem;
+  gap: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  padding-top: 0.5rem;
+}
+
+.home-scorers {
+  flex: 1;
+  text-align: right;
+}
+
+.away-scorers {
+  flex: 1;
+  text-align: left;
+}
+
+.scorer-icon-divider {
+  color: rgba(255, 255, 255, 0.15);
+  font-size: 0.85rem;
+}
+
+.scorer {
+  margin-bottom: 0.15rem;
+}
+
+/* Toggle Expand Button */
+.expand-btn-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.expand-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  transition: all 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.expand-btn:hover {
+  color: var(--primary);
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+/* Mapped Details Section (Expanded) */
+.match-details-expanded {
+  width: 100%;
+  border-top: 1px dashed var(--card-border);
+  margin-top: 1rem;
+  padding-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 640px) {
+  .details-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.details-column-title {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  color: var(--primary);
+  letter-spacing: 1px;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Timeline */
+.details-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: rgba(15, 23, 42, 0.3);
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.timeline-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+}
+
+.timeline-time {
+  font-weight: 700;
+  color: var(--primary);
+  min-width: 32px;
+}
+
+.timeline-icon {
+  font-size: 0.9rem;
+}
+
+.timeline-text {
+  flex: 1;
+}
+
+/* Stats Comparison Bars */
+.stats-comparison-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: rgba(15, 23, 42, 0.3);
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.stat-comparison-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.stat-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+.stat-name {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.stat-val {
+  font-weight: 700;
+}
+
+.stat-val.home-val {
+  color: var(--gradient-start);
+}
+
+.stat-val.away-val {
+  color: var(--gradient-end);
+}
+
+.stat-bar-container {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  display: flex;
+  overflow: hidden;
+}
+
+.stat-bar {
+  height: 100%;
+  transition: width 0.5s ease-out;
+}
+
+.stat-bar.home-bar {
+  background: var(--gradient-start);
+}
+
+.stat-bar.away-bar {
+  background: var(--gradient-end);
+}

@@ -37,13 +37,51 @@ exports.handler = async function (event, context) {
               time_elapsed = e.status?.displayClock || 'Live';
             }
 
+            const getStat = (competitor, name) => {
+              return competitor.statistics?.find(s => s.name === name)?.displayValue || '';
+            };
+
+            const homeStats = {
+              possession: getStat(home, 'possessionPct'),
+              shotsOnTarget: getStat(home, 'shotsOnTarget'),
+              totalShots: getStat(home, 'totalShots'),
+              fouls: getStat(home, 'foulsCommitted'),
+              corners: getStat(home, 'wonCorners')
+            };
+
+            const awayStats = {
+              possession: getStat(away, 'possessionPct'),
+              shotsOnTarget: getStat(away, 'shotsOnTarget'),
+              totalShots: getStat(away, 'totalShots'),
+              fouls: getStat(away, 'foulsCommitted'),
+              corners: getStat(away, 'wonCorners')
+            };
+
+            const details = comp.details?.map(d => {
+              return {
+                type: d.type?.text || '',
+                clock: d.clock?.displayValue || '',
+                team_id: d.team?.id || '',
+                athlete: d.athletesInvolved?.[0]?.displayName || '',
+                scoringPlay: d.scoringPlay || false,
+                redCard: d.redCard || false,
+                yellowCard: d.yellowCard || false
+              };
+            }) || [];
+
             return {
               home_team_name_en: home.team?.name || home.team?.displayName || '',
               away_team_name_en: away.team?.name || away.team?.displayName || '',
               home_score: parseInt(home.score, 10) || 0,
               away_score: parseInt(away.score, 10) || 0,
               finished: finished,
-              time_elapsed: time_elapsed
+              time_elapsed: time_elapsed,
+              venue: comp.venue?.fullName || '',
+              home_team_id: home.team?.id || '',
+              away_team_id: away.team?.id || '',
+              details: details,
+              home_stats: homeStats,
+              away_stats: awayStats
             };
           }).filter(Boolean);
 

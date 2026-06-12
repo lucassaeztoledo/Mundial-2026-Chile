@@ -2,9 +2,195 @@ import { useState, useMemo, useEffect } from 'react';
 import db from './data/db.json';
 import { normalizeString, getFlag, TEAM_ENG_TO_ESP } from './utils';
 
+function StatRow({ label, homeVal, awayVal, isPct = false }) {
+  const homeNum = parseFloat(homeVal) || 0;
+  const awayNum = parseFloat(awayVal) || 0;
+  let homeWidth = 50;
+  if (isPct) {
+    homeWidth = homeNum;
+  } else {
+    const total = homeNum + awayNum;
+    homeWidth = total > 0 ? (homeNum / total) * 100 : 50;
+  }
+  
+  return (
+    <div className="stat-comparison-row">
+      <div className="stat-label-row">
+        <span className="stat-val home-val">{homeVal || '0'}</span>
+        <span className="stat-name">{label}</span>
+        <span className="stat-val away-val">{awayVal || '0'}</span>
+      </div>
+      <div className="stat-bar-container">
+        <div className="stat-bar home-bar" style={{ width: `${homeWidth}%` }}></div>
+        <div className="stat-bar away-bar" style={{ width: `${100 - homeWidth}%` }}></div>
+      </div>
+    </div>
+  );
+}
+
+function MatchCard({ match, searchTerm, isExpanded, onToggleExpand }) {
+  const homeGoals = match.details?.filter(d => d.scoringPlay && (d.team_id === match.homeTeamId || TEAM_ENG_TO_ESP[match.home_team_name_en] === TEAM_ENG_TO_ESP[d.team_id])) || [];
+  const awayGoals = match.details?.filter(d => d.scoringPlay && (d.team_id === match.awayTeamId || TEAM_ENG_TO_ESP[match.away_team_name_en] === TEAM_ENG_TO_ESP[d.team_id])) || [];
+  const hasDetails = match.details && match.details.length > 0;
+  
+  // Custom icons for timeline events
+  const getTimelineIcon = (type) => {
+    if (type.toLowerCase().includes('goal')) return '⚽';
+    if (type.toLowerCase().includes('red card') || type.toLowerCase().includes('red')) return '🟥';
+    if (type.toLowerCase().includes('yellow card') || type.toLowerCase().includes('yellow')) return '🟨';
+    return '⏱️';
+  };
+
+  return (
+    <div className={`match-card ${match.score1 !== undefined ? 'result-card' : ''}`}>
+      <div className="match-datetime">
+        <div className="match-date">{match.date}</div>
+        <div className="match-time-container">
+          <span className="match-time">{match.time} hrs</span>
+          {match.isLive && (
+            <span className="live-badge">
+              <span className="live-dot"></span> EN VIVO {match.timeElapsed}
+            </span>
+          )}
+        </div>
+      </div>
+      
+      <div className="match-teams">
+        <span className={`team-name text-right ${normalizeString(match.team1).includes(normalizeString(searchTerm)) && searchTerm ? 'highlight' : ''}`}>
+          {getFlag(match.team1)} {match.team1}
+        </span>
+        {match.score1 !== undefined ? (
+          <span className="match-score-pill">
+            {match.score1} - {match.score2}
+          </span>
+        ) : (
+          <span className="vs">vs</span>
+        )}
+        <span className={`team-name text-left ${normalizeString(match.team2).includes(normalizeString(searchTerm)) && searchTerm ? 'highlight' : ''}`}>
+          {getFlag(match.team2)} {match.team2}
+        </span>
+      </div>
+      
+      <div className="match-info">
+        <div className="match-group">Grupo {match.group}</div>
+        <div className="match-location">{match.venue || match.location}</div>
+        {match.channels && match.channels.length > 0 && (
+          <div className="match-channels">
+            {match.channels.map(ch => (
+              <span key={ch} className="channel-tag">{ch}</span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Scorers Row (direct glance) */}
+      {match.details && match.details.some(d => d.scoringPlay) && (
+        <div className="match-scorers-row">
+          <div className="home-scorers">
+            {homeGoals.map((g, i) => (
+              <div key={i} className="scorer">
+                {g.athlete} ({g.clock})
+              </div>
+            ))}
+          </div>
+          <div className="scorer-icon-divider">⚽</div>
+          <div className="away-scorers">
+            {awayGoals.map((g, i) => (
+              <div key={i} className="scorer">
+                ({g.clock}) {g.athlete}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Expanded details (stats & timeline) */}
+      {isExpanded && hasDetails && (
+        <div className="match-details-expanded">
+          <div className="details-grid">
+            {/* Timeline Column */}
+            <div>
+              <div className="details-column-title">
+                <span>⏱️</span> Cronología del partido
+              </div>
+              <div className="details-timeline">
+                {match.details.map((d, i) => (
+                  <div key={i} className="timeline-item">
+                    <span className="timeline-time">{d.clock}</span>
+                    <span className="timeline-icon">{getTimelineIcon(d.type)}</span>
+                    <span className="timeline-text">
+                      <strong>{d.athlete}</strong> ({d.team_id === match.homeTeamId || TEAM_ENG_TO_ESP[match.home_team_name_en] === TEAM_ENG_TO_ESP[d.team_id] ? match.team1 : match.team2}) - {d.type}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Statistics Column */}
+            <div>
+              <div className="details-column-title">
+                <span>📊</span> Estadísticas del partido
+              </div>
+              <div className="stats-comparison-container">
+                <StatRow 
+                  label="Posesión" 
+                  homeVal={match.homeStats?.possession} 
+                  awayVal={match.awayStats?.possession} 
+                  isPct={true} 
+                />
+                <StatRow 
+                  label="Tiros al Arco" 
+                  homeVal={match.homeStats?.shotsOnTarget} 
+                  awayVal={match.awayStats?.shotsOnTarget} 
+                />
+                <StatRow 
+                  label="Tiros Totales" 
+                  homeVal={match.homeStats?.totalShots} 
+                  awayVal={match.awayStats?.totalShots} 
+                />
+                <StatRow 
+                  label="Faltas Cometidas" 
+                  homeVal={match.homeStats?.fouls} 
+                  awayVal={match.awayStats?.fouls} 
+                />
+                <StatRow 
+                  label="Tiros de Esquina" 
+                  homeVal={match.homeStats?.corners} 
+                  awayVal={match.awayStats?.corners} 
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Expand/Collapse Button */}
+      {hasDetails && (
+        <div className="expand-btn-container">
+          <button className="expand-btn" onClick={onToggleExpand}>
+            {isExpanded ? (
+              <>Ocultar Detalles ⬆️</>
+            ) : (
+              <>Ver Detalles y Estadísticas ⬇️</>
+            )}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState('partidos');
   const [searchTerm, setSearchTerm] = useState('');
+  const [expandedMatches, setExpandedMatches] = useState({});
+
+  const toggleMatchExpanded = (key) => {
+    setExpandedMatches(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
 
   // Contador regresivo para el partido inaugural (11 de junio, 15:00 CLT / UTC-4)
   const calculateTimeLeft = () => {
@@ -74,7 +260,15 @@ function App() {
           score1: apiMatch.home_score,
           score2: apiMatch.away_score,
           isLive: apiMatch.finished === 'FALSE',
-          timeElapsed: apiMatch.time_elapsed
+          timeElapsed: apiMatch.time_elapsed,
+          venue: apiMatch.venue || match.location,
+          homeTeamId: apiMatch.home_team_id,
+          awayTeamId: apiMatch.away_team_id,
+          details: apiMatch.details || [],
+          homeStats: apiMatch.home_stats || {},
+          awayStats: apiMatch.away_stats || {},
+          home_team_name_en: apiMatch.home_team_name_en,
+          away_team_name_en: apiMatch.away_team_name_en
         };
       }
       return match;
@@ -243,49 +437,18 @@ function App() {
                     Mostrando <strong>{filteredMatches.length}</strong> de <strong>{mergedMatches.length}</strong> partidos de la fase de grupos
                   </div>
                   <div className="calendar-list">
-                    {filteredMatches.map((match, idx) => (
-                      <div key={idx} className="match-card">
-                        <div className="match-datetime">
-                          <div className="match-date">{match.date}</div>
-                          <div className="match-time-container">
-                            <span className="match-time">{match.time} hrs</span>
-                            {match.isLive && (
-                              <span className="live-badge">
-                                <span className="live-dot"></span> EN VIVO {match.timeElapsed}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="match-teams">
-                          <span className={`team-name ${normalizeString(match.team1).includes(normalizeString(searchTerm)) && searchTerm ? 'highlight' : ''}`}>
-                            {getFlag(match.team1)} {match.team1}
-                          </span>
-                          {match.score1 !== undefined ? (
-                            <span className="match-score-pill">
-                              {match.score1} - {match.score2}
-                            </span>
-                          ) : (
-                            <span className="vs">vs</span>
-                          )}
-                          <span className={`team-name ${normalizeString(match.team2).includes(normalizeString(searchTerm)) && searchTerm ? 'highlight' : ''}`}>
-                            {getFlag(match.team2)} {match.team2}
-                          </span>
-                        </div>
-                        
-                        <div className="match-info">
-                          <div className="match-group">Grupo {match.group}</div>
-                          <div className="match-location">{match.location}</div>
-                          {match.channels.length > 0 && (
-                            <div className="match-channels">
-                              {match.channels.map(ch => (
-                                <span key={ch} className="channel-tag">{ch}</span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                    {filteredMatches.map((match) => {
+                      const matchKey = `${match.team1}_${match.team2}`;
+                      return (
+                        <MatchCard
+                          key={matchKey}
+                          match={match}
+                          searchTerm={searchTerm}
+                          isExpanded={!!expandedMatches[matchKey]}
+                          onToggleExpand={() => toggleMatchExpanded(matchKey)}
+                        />
+                      );
+                    })}
                   </div>
 
                   {!searchTerm.trim() && visibleDates[visibleDates.length - 1] !== uniqueDates[uniqueDates.length - 1] && (
@@ -310,31 +473,18 @@ function App() {
             <h2 className="section-title">resultados de los partidos</h2>
             {finishedMatches.length > 0 ? (
               <div className="calendar-list">
-                {finishedMatches.map((match, idx) => (
-                  <div key={idx} className="match-card result-card">
-                    <div className="match-datetime">
-                      <div className="match-date">{match.date}</div>
-                      <div className="match-time">{match.time} hrs</div>
-                    </div>
-                    
-                    <div className="match-teams result-teams">
-                      <span className="team-name text-right">
-                        {getFlag(match.team1)} {match.team1}
-                      </span>
-                      <span className="result-score">
-                        {match.score1} - {match.score2}
-                      </span>
-                      <span className="team-name text-left">
-                        {getFlag(match.team2)} {match.team2}
-                      </span>
-                    </div>
-                    
-                    <div className="match-info">
-                      <div className="match-group">Grupo {match.group}</div>
-                      <div className="match-location">{match.location}</div>
-                    </div>
-                  </div>
-                ))}
+                {finishedMatches.map((match) => {
+                  const matchKey = `${match.team1}_${match.team2}`;
+                  return (
+                    <MatchCard
+                      key={matchKey}
+                      match={match}
+                      searchTerm={searchTerm}
+                      isExpanded={!!expandedMatches[matchKey]}
+                      onToggleExpand={() => toggleMatchExpanded(matchKey)}
+                    />
+                  );
+                })}
               </div>
             ) : (
               <div className="empty-state">
