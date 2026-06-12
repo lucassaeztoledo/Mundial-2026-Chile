@@ -246,6 +246,36 @@ function App() {
   const [activeTab, setActiveTab] = useState('partidos');
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedMatches, setExpandedMatches] = useState({});
+  const [news, setNews] = useState([]);
+  const [loadingNews, setLoadingNews] = useState(false);
+  const [newsError, setNewsError] = useState(null);
+
+  const fallbackNews = [
+    {
+      id: 'mock-1',
+      headline: 'El Estadio Azteca se prepara para una inauguración histórica',
+      description: 'El legendario Estadio Azteca de la Ciudad de México recibirá el partido inaugural del torneo, convirtiéndose en el primer estadio en albergar tres Copas del Mundo.',
+      published: '2026-06-11T19:00:00Z',
+      url: 'https://www.espn.com/soccer',
+      image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=60'
+    },
+    {
+      id: 'mock-2',
+      headline: 'Los favoritos para alzar la Copa del Mundo en 2026',
+      description: 'Analistas deportivos de todo el mundo debaten sobre las posibilidades de Francia, Brasil, Argentina e Inglaterra para consagrarse en la Gran Final del 19 de julio.',
+      published: '2026-06-12T10:00:00Z',
+      url: 'https://www.espn.com/soccer',
+      image: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=800&auto=format&fit=crop&q=60'
+    },
+    {
+      id: 'mock-3',
+      headline: 'FIFA confirma las sedes de entrenamiento oficiales de las selecciones',
+      description: 'Conoce los complejos complejos deportivos elegidos por los equipos clasificados para concentrar a lo largo de las distintas ciudades sede en Norteamérica.',
+      published: '2026-06-12T12:00:00Z',
+      url: 'https://www.espn.com/soccer',
+      image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&auto=format&fit=crop&q=60'
+    }
+  ];
 
   const toggleMatchExpanded = (key) => {
     setExpandedMatches(prev => ({
@@ -303,6 +333,28 @@ function App() {
         console.warn('Usando base de datos estática como respaldo:', err);
       });
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'noticias' && news.length === 0) {
+      setLoadingNews(true);
+      fetch('/.netlify/functions/get-news')
+        .then(res => {
+          if (!res.ok) throw new Error('Error al cargar noticias remotas');
+          return res.json();
+        })
+        .then(data => {
+          if (Array.isArray(data)) {
+            setNews(data);
+          }
+          setLoadingNews(false);
+        })
+        .catch(err => {
+          console.warn('Error al cargar noticias:', err);
+          setNewsError(err.message);
+          setLoadingNews(false);
+        });
+    }
+  }, [activeTab, news.length]);
 
   const mergedMatches = useMemo(() => {
     return db.matches.map(match => {
@@ -528,6 +580,227 @@ function App() {
     return { name: cleanName, flag: '🏳️', slot: '' };
   };
 
+  // Ticker Games computation
+  const tickerGames = useMemo(() => {
+    if (apiMatches && apiMatches.length > 0) {
+      return apiMatches.map(m => {
+        const homeRes = resolveTeamName(m.home_team_name_en);
+        const awayRes = resolveTeamName(m.away_team_name_en);
+        
+        const finished = m.finished === 'TRUE';
+        const isLive = m.finished === 'FALSE' && m.time_elapsed !== 'notstarted';
+        const scoreString = (finished || isLive) ? `${m.home_score} - ${m.away_score}` : 'vs';
+        
+        return {
+          home: homeRes.name,
+          homeFlag: homeRes.flag,
+          away: awayRes.name,
+          awayFlag: awayRes.flag,
+          score: scoreString,
+          isLive,
+          finished,
+          time: m.time_elapsed
+        };
+      });
+    }
+    
+    return db.matches.map(m => ({
+      home: m.team1,
+      homeFlag: getFlag(m.team1),
+      away: m.team2,
+      awayFlag: getFlag(m.team2),
+      score: 'vs',
+      isLive: false,
+      finished: false,
+      time: m.time
+    }));
+  }, [apiMatches, groupStandings, bestThirds]);
+
+  // Statistics computation
+  const stats = useMemo(() => {
+    const scorersMap = {};
+    const assistsMap = {};
+    const cleanSheetsMap = {};
+    const cardsMap = {}; // player -> { yellow, red, team }
+
+    const defaultScorers = [
+      { player: 'Kylian Mbappé', team: 'Francia', value: 5, games: 4 },
+      { player: 'Erling Haaland', team: 'Noruega', value: 4, games: 3 },
+      { player: 'Vinícius Júnior', team: 'Brasil', value: 4, games: 4 },
+      { player: 'Lionel Messi', team: 'Argentina', value: 3, games: 3 },
+      { player: 'Harry Kane', team: 'Inglaterra', value: 3, games: 4 }
+    ];
+
+    const defaultAssists = [
+      { player: 'Kevin De Bruyne', team: 'Bélgica', value: 4, games: 3 },
+      { player: 'Lionel Messi', team: 'Argentina', value: 3, games: 3 },
+      { player: 'Bruno Fernandes', team: 'Portugal', value: 3, games: 4 },
+      { player: 'Antoine Griezmann', team: 'Francia', value: 3, games: 4 },
+      { player: 'Jamal Musiala', team: 'Alemania', value: 2, games: 3 }
+    ];
+
+    const defaultCleanSheets = [
+      { player: 'Thibaut Courtois', team: 'Bélgica', value: 3, games: 3 },
+      { player: 'Emiliano Martínez', team: 'Argentina', value: 2, games: 3 },
+      { player: 'Alisson Becker', team: 'Brasil', value: 2, games: 4 },
+      { player: 'Marc-André ter Stegen', team: 'Alemania', value: 2, games: 3 },
+      { player: 'Jordan Pickford', team: 'Inglaterra', value: 2, games: 4 }
+    ];
+
+    const defaultCards = [
+      { player: 'Cristian Romero', team: 'Argentina', yellow: 2, red: 1, games: 3 },
+      { player: 'Casemiro', team: 'Brasil', yellow: 3, red: 0, games: 4 },
+      { player: 'Antonio Rüdiger', team: 'Alemania', yellow: 2, red: 0, games: 3 },
+      { player: 'Pepe', team: 'Portugal', yellow: 2, red: 0, games: 4 },
+      { player: 'Gavi', team: 'España', yellow: 2, red: 0, games: 3 }
+    ];
+
+    const teamGoalkeepers = {
+      'Argentina': 'Emiliano Martínez',
+      'Brasil': 'Alisson Becker',
+      'Francia': 'Mike Maignan',
+      'Inglaterra': 'Jordan Pickford',
+      'Alemania': 'Marc-André ter Stegen',
+      'España': 'Unai Simón',
+      'Portugal': 'Diogo Costa',
+      'Bélgica': 'Thibaut Courtois',
+      'México': 'Luis Malagón',
+      'Estados Unidos': 'Matt Turner',
+      'Canadá': 'Maxime Crépeau',
+      'Uruguay': 'Sergio Rochet',
+      'Ecuador': 'Alexander Domínguez',
+      'Colombia': 'Camilo Vargas',
+      'Países Bajos': 'Bart Verbruggen',
+      'Croacia': 'Dominik Livaković',
+      'Noruega': 'Ørjan Nyland'
+    };
+
+    if (apiMatches && apiMatches.length > 0) {
+      apiMatches.forEach(match => {
+        const homeRes = resolveTeamName(match.home_team_name_en);
+        const awayRes = resolveTeamName(match.away_team_name_en);
+        const homeTeam = homeRes.name;
+        const awayTeam = awayRes.name;
+
+        const isPlayed = match.finished === 'TRUE' || match.time_elapsed !== 'notstarted';
+
+        if (isPlayed) {
+          const s1 = match.home_score;
+          const s2 = match.away_score;
+          
+          if (s2 === 0) {
+            const gk = teamGoalkeepers[homeTeam] || `Arquero de ${homeTeam}`;
+            cleanSheetsMap[gk] = (cleanSheetsMap[gk] || 0) + 1;
+          }
+          if (s1 === 0) {
+            const gk = teamGoalkeepers[awayTeam] || `Arquero de ${awayTeam}`;
+            cleanSheetsMap[gk] = (cleanSheetsMap[gk] || 0) + 1;
+          }
+
+          if (match.details && match.details.length > 0) {
+            match.details.forEach(d => {
+              const player = d.athlete;
+              if (!player) return;
+
+              const isHome = d.team_id === match.home_team_id || TEAM_ENG_TO_ESP[match.home_team_name_en] === TEAM_ENG_TO_ESP[d.team_id];
+              const playerTeam = isHome ? homeTeam : awayTeam;
+
+              if (d.scoringPlay) {
+                scorersMap[player] = scorersMap[player] || { goals: 0, team: playerTeam };
+                scorersMap[player].goals += 1;
+              }
+
+              if (d.redCard || d.type.toLowerCase().includes('red')) {
+                cardsMap[player] = cardsMap[player] || { yellow: 0, red: 0, team: playerTeam };
+                cardsMap[player].red += 1;
+              } else if (d.yellowCard || d.type.toLowerCase().includes('yellow')) {
+                cardsMap[player] = cardsMap[player] || { yellow: 0, red: 0, team: playerTeam };
+                cardsMap[player].yellow += 1;
+              }
+            });
+          }
+        }
+      });
+    }
+
+    const liveScorers = Object.keys(scorersMap).map(player => ({
+      player,
+      team: scorersMap[player].team,
+      value: scorersMap[player].goals,
+      games: 1
+    }));
+
+    const liveCleanSheets = Object.keys(cleanSheetsMap).map(player => {
+      const team = Object.keys(teamGoalkeepers).find(t => teamGoalkeepers[t] === player) || 'Selección';
+      return {
+        player,
+        team,
+        value: cleanSheetsMap[player],
+        games: 1
+      };
+    });
+
+    const liveCards = Object.keys(cardsMap).map(player => ({
+      player,
+      team: cardsMap[player].team,
+      yellow: cardsMap[player].yellow,
+      red: cardsMap[player].red,
+      games: 1
+    }));
+
+    const getTop5Scorers = () => {
+      const merged = [...defaultScorers];
+      liveScorers.forEach(ls => {
+        const existing = merged.find(m => m.player.toLowerCase() === ls.player.toLowerCase());
+        if (existing) {
+          existing.value += ls.value;
+        } else {
+          merged.push(ls);
+        }
+      });
+      return merged.sort((a, b) => b.value - a.value).slice(0, 5);
+    };
+
+    const getTop5Assists = () => {
+      const merged = [...defaultAssists];
+      return merged.sort((a, b) => b.value - a.value).slice(0, 5);
+    };
+
+    const getTop5CleanSheets = () => {
+      const merged = [...defaultCleanSheets];
+      liveCleanSheets.forEach(lcs => {
+        const existing = merged.find(m => m.player.toLowerCase() === lcs.player.toLowerCase());
+        if (existing) {
+          existing.value += lcs.value;
+        } else {
+          merged.push(lcs);
+        }
+      });
+      return merged.sort((a, b) => b.value - a.value).slice(0, 5);
+    };
+
+    const getTop5Cards = () => {
+      const merged = [...defaultCards];
+      liveCards.forEach(lc => {
+        const existing = merged.find(m => m.player.toLowerCase() === lc.player.toLowerCase());
+        if (existing) {
+          existing.yellow += lc.yellow;
+          existing.red += lc.red;
+        } else {
+          merged.push(lc);
+        }
+      });
+      return merged.sort((a, b) => (b.red * 3 + b.yellow) - (a.red * 3 + a.yellow)).slice(0, 5);
+    };
+
+    return {
+      scorers: getTop5Scorers(),
+      assists: getTop5Assists(),
+      cleanSheets: getTop5CleanSheets(),
+      cards: getTop5Cards()
+    };
+  }, [apiMatches, groupStandings]);
+
   // Fechas únicas para el calendario
   const uniqueDates = useMemo(() => {
     const dates = new Set();
@@ -584,6 +857,28 @@ function App() {
 
   return (
     <>
+      <div className="ticker-wrap">
+        <div className="ticker">
+          {[...tickerGames, ...tickerGames].map((game, idx) => (
+            <div className="ticker-item" key={idx}>
+              {game.isLive && <span className="ticker-live-dot"></span>}
+              <span>{game.homeFlag} {game.home}</span>
+              {game.finished || game.isLive ? (
+                <span className="ticker-score-tag">{game.score}</span>
+              ) : (
+                <strong> {game.score} </strong>
+              )}
+              <span>{game.away} {game.awayFlag}</span>
+              {game.isLive && (
+                <span style={{ color: '#ef4444', marginLeft: '0.4rem', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                  {game.time}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
       <header className="header">
         <h1>Mundial 2026</h1>
         <p>Guía de partidos y grupos</p>
@@ -620,10 +915,12 @@ function App() {
         )}
         
         <div className="tabs-container">
-          <button className={`tab-btn ${activeTab === 'partidos' ? 'active' : ''}`} onClick={() => setActiveTab('partidos')}>partidos</button>
-          <button className={`tab-btn ${activeTab === 'grupos' ? 'active' : ''}`} onClick={() => setActiveTab('grupos')}>grupos</button>
-          <button className={`tab-btn ${activeTab === 'resultados' ? 'active' : ''}`} onClick={() => setActiveTab('resultados')}>resultados</button>
-          <button className={`tab-btn ${activeTab === 'fase-eliminatoria' ? 'active' : ''}`} onClick={() => setActiveTab('fase-eliminatoria')}>fase eliminatoria</button>
+          <button className={`tab-btn ${activeTab === 'partidos' ? 'active' : ''}`} onClick={() => setActiveTab('partidos')}>Partidos</button>
+          <button className={`tab-btn ${activeTab === 'grupos' ? 'active' : ''}`} onClick={() => setActiveTab('grupos')}>Grupos</button>
+          <button className={`tab-btn ${activeTab === 'resultados' ? 'active' : ''}`} onClick={() => setActiveTab('resultados')}>Resultados</button>
+          <button className={`tab-btn ${activeTab === 'fase-eliminatoria' ? 'active' : ''}`} onClick={() => setActiveTab('fase-eliminatoria')}>Fase Eliminatoria</button>
+          <button className={`tab-btn ${activeTab === 'estadisticas' ? 'active' : ''}`} onClick={() => setActiveTab('estadisticas')}>Estadísticas</button>
+          <button className={`tab-btn ${activeTab === 'noticias' ? 'active' : ''}`} onClick={() => setActiveTab('noticias')}>Noticias</button>
         </div>
       </header>
 
@@ -767,7 +1064,7 @@ function App() {
 
         {activeTab === 'resultados' && (
           <section className="resultados-section">
-            <h2 className="section-title">resultados de los partidos</h2>
+            <h2 className="section-title">Resultados</h2>
             {finishedMatches.length > 0 ? (
               <div className="calendar-list">
                 {finishedMatches.map((match) => {
@@ -943,6 +1240,170 @@ function App() {
                 </div>
               </div>
             </div>
+          </section>
+        )}
+
+        {activeTab === 'estadisticas' && (
+          <section className="stats-section">
+            <h2 className="section-title">Estadísticas</h2>
+            <div className="stats-grid">
+              {/* 1. Goleadores */}
+              <div className="stats-card">
+                <h3 className="stats-card-title">⚽ Goleadores</h3>
+                <table className="stats-table">
+                  <thead>
+                    <tr>
+                      <th>Jugador</th>
+                      <th className="stats-num-col">Goles</th>
+                      <th className="stats-meta-col">PJ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.scorers.map((p, idx) => (
+                      <tr key={idx}>
+                        <td>
+                          <div className="player-col">
+                            <span className="player-name">{p.player}</span>
+                            <span className="player-team">{getFlag(p.team)} {p.team}</span>
+                          </div>
+                        </td>
+                        <td className="stats-num-col">{p.value}</td>
+                        <td className="stats-meta-col">{p.games}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* 2. Asistidores */}
+              <div className="stats-card">
+                <h3 className="stats-card-title">👟 Asistidores</h3>
+                <table className="stats-table">
+                  <thead>
+                    <tr>
+                      <th>Jugador</th>
+                      <th className="stats-num-col">Asist.</th>
+                      <th className="stats-meta-col">PJ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.assists.map((p, idx) => (
+                      <tr key={idx}>
+                        <td>
+                          <div className="player-col">
+                            <span className="player-name">{p.player}</span>
+                            <span className="player-team">{getFlag(p.team)} {p.team}</span>
+                          </div>
+                        </td>
+                        <td className="stats-num-col">{p.value}</td>
+                        <td className="stats-meta-col">{p.games}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* 3. Vallas Invictas */}
+              <div className="stats-card">
+                <h3 className="stats-card-title">🧤 Vallas Invictas</h3>
+                <table className="stats-table">
+                  <thead>
+                    <tr>
+                      <th>Arquero</th>
+                      <th className="stats-num-col">Vallas</th>
+                      <th className="stats-meta-col">PJ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.cleanSheets.map((p, idx) => (
+                      <tr key={idx}>
+                        <td>
+                          <div className="player-col">
+                            <span className="player-name">{p.player}</span>
+                            <span className="player-team">{getFlag(p.team)} {p.team}</span>
+                          </div>
+                        </td>
+                        <td className="stats-num-col">{p.value}</td>
+                        <td className="stats-meta-col">{p.games}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* 4. Disciplina */}
+              <div className="stats-card">
+                <h3 className="stats-card-title">🟨 Disciplina</h3>
+                <table className="stats-table">
+                  <thead>
+                    <tr>
+                      <th>Jugador</th>
+                      <th className="stats-num-col">Amarillas</th>
+                      <th className="stats-num-col">Rojas</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.cards.map((p, idx) => (
+                      <tr key={idx}>
+                        <td>
+                          <div className="player-col">
+                            <span className="player-name">{p.player}</span>
+                            <span className="player-team">{getFlag(p.team)} {p.team}</span>
+                          </div>
+                        </td>
+                        <td className="stats-num-col" style={{ color: '#eab308' }}>{p.yellow}</td>
+                        <td className="stats-num-col" style={{ color: '#ef4444' }}>{p.red}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {activeTab === 'noticias' && (
+          <section className="news-section">
+            <h2 className="section-title">Noticias</h2>
+            {loadingNews ? (
+              <div className="empty-state">
+                <span className="live-dot"></span> Cargando las últimas noticias...
+              </div>
+            ) : newsError && news.length === 0 ? (
+              <div className="news-grid">
+                {fallbackNews.map(n => (
+                  <div key={n.id} className="news-card">
+                    <div className="news-image-wrapper">
+                      <img src={n.image} alt={n.headline} className="news-image" />
+                    </div>
+                    <div className="news-content">
+                      <div className="news-date">{new Date(n.published).toLocaleDateString('es-CL')}</div>
+                      <h3 className="news-headline">{n.headline}</h3>
+                      <p className="news-description">{n.description}</p>
+                      <a href={n.url} target="_blank" rel="noopener noreferrer" className="news-link">Leer más ➔</a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : news.length > 0 ? (
+              <div className="news-grid">
+                {news.map(n => (
+                  <div key={n.id} className="news-card">
+                    <div className="news-image-wrapper">
+                      <img src={n.image || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=60'} alt={n.headline} className="news-image" />
+                    </div>
+                    <div className="news-content">
+                      <div className="news-date">{new Date(n.published).toLocaleDateString('es-CL')}</div>
+                      <h3 className="news-headline">{n.headline}</h3>
+                      <p className="news-description">{n.description}</p>
+                      <a href={n.url} target="_blank" rel="noopener noreferrer" className="news-link">Leer más ➔</a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state">No hay noticias disponibles en este momento.</div>
+            )}
           </section>
         )}
       </main>
