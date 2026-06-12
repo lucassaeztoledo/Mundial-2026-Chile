@@ -1,6 +1,6 @@
-import https from 'https';
+const https = require('https');
 
-export async function handler(event, context) {
+exports.handler = async function (event, context) {
   return new Promise((resolve) => {
     const url = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=20260611-20260719&limit=150';
 
@@ -77,4 +77,4 @@ export async function handler(event, context) {
       });
     });
   });
-}
+};
