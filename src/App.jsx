@@ -336,20 +336,28 @@ function App() {
   const [apiMatches, setApiMatches] = useState([]);
 
   useEffect(() => {
-    // Intentar cargar marcadores automáticos desde la Netlify Function
-    fetch('/.netlify/functions/get-results')
-      .then(res => {
-        if (!res.ok) throw new Error('Error al cargar marcadores remotos');
-        return res.json();
-      })
-      .then(data => {
-        if (Array.isArray(data)) {
-          setApiMatches(data);
-        }
-      })
-      .catch(err => {
-        console.warn('Usando base de datos estática como respaldo:', err);
-      });
+    const fetchResults = () => {
+      fetch('/.netlify/functions/get-results')
+        .then(res => {
+          if (!res.ok) throw new Error('Error al cargar marcadores remotos');
+          return res.json();
+        })
+        .then(data => {
+          if (Array.isArray(data)) {
+            setApiMatches(data);
+          }
+        })
+        .catch(err => {
+          console.warn('Usando base de datos estática como respaldo:', err);
+        });
+    };
+
+    fetchResults();
+
+    // Consultar marcadores cada 30 segundos
+    const intervalId = setInterval(fetchResults, 30000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   useEffect(() => {
@@ -373,6 +381,23 @@ function App() {
         });
     }
   }, [activeTab, news.length]);
+
+  // Desplazar automáticamente el calendario horizontal móvil al día seleccionado
+  useEffect(() => {
+    if (activeTab === 'partidos') {
+      const timer = setTimeout(() => {
+        const selectedBtn = document.querySelector('.calendar-day-btn.selected');
+        if (selectedBtn) {
+          selectedBtn.scrollIntoView({
+            behavior: 'auto',
+            block: 'nearest',
+            inline: 'center'
+          });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab, visibleDates]);
 
   const mergedMatches = useMemo(() => {
     return db.matches.map(match => {
@@ -700,7 +725,7 @@ function App() {
       const diffTime = itemDate.getTime() - todayStart.getTime();
       const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
-      return diffDays >= -2 && diffDays <= 3;
+      return diffDays === 0 || diffDays === 1;
     });
 
     if (filteredList.length === 0) {
@@ -895,7 +920,7 @@ function App() {
     
     // Filtro por días visibles si no hay búsqueda
     return matches.filter(match => visibleDates.includes(match.date));
-  }, [searchTerm, visibleDates]);
+  }, [searchTerm, visibleDates, mergedMatches]);
 
   const filteredGroups = useMemo(() => {
     if (!searchTerm.trim()) return db.groups;
