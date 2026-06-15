@@ -1,19 +1,19 @@
 :root {
-  --bg-color: #080c16;
+  --bg-color: #0b0f19;
   --text-color: #f8fafc;
-  --primary: #e6223a;
-  --primary-rgb: 230, 34, 58;
-  --primary-hover: #c8102e;
-  --card-bg: rgba(17, 24, 39, 0.65);
+  --primary: #0ea5e9;
+  --primary-rgb: 14, 165, 233;
+  --primary-hover: #0284c7;
+  --card-bg: rgba(22, 28, 45, 0.65);
   --card-border: rgba(255, 255, 255, 0.08);
-  --input-bg: rgba(8, 12, 22, 0.85);
-  --gradient-start: #0056b3;
-  --gradient-start-rgb: 0, 86, 179;
-  --gradient-end: #e6223a;
-  --gradient-end-rgb: 230, 34, 58;
-  --accent: #eab308;
-  --accent-rgb: 234, 179, 8;
-  --accent-hover: #ca8a04;
+  --input-bg: rgba(11, 15, 25, 0.85);
+  --gradient-start: #6366f1;
+  --gradient-start-rgb: 99, 102, 241;
+  --gradient-end: #0ea5e9;
+  --gradient-end-rgb: 14, 165, 233;
+  --accent: #f59e0b;
+  --accent-rgb: 245, 158, 11;
+  --accent-hover: #d97706;
 }
 
 * {
@@ -30,7 +30,7 @@ body {
   background-image: 
     radial-gradient(circle at 10% 20%, rgba(var(--gradient-start-rgb), 0.15), transparent 40%),
     radial-gradient(circle at 90% 80%, rgba(var(--primary-rgb), 0.12), transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(var(--accent-rgb), 0.05), transparent 50%);
+    radial-gradient(circle at 50% 50%, rgba(var(--accent-rgb), 0.06), transparent 50%);
   background-attachment: fixed;
   overflow-x: hidden;
 }
@@ -159,14 +159,14 @@ body {
   border-radius: 16px;
   padding: 1.5rem;
   backdrop-filter: blur(12px);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   animation: fadeIn 0.5s ease-out backwards;
 }
 
 .group-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 25px -5px rgba(var(--gradient-start-rgb), 0.18), 0 8px 10px -6px rgba(var(--primary-rgb), 0.18);
+  border-color: rgba(var(--primary-rgb), 0.35);
 }
 
 .group-header {
@@ -271,13 +271,14 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   animation: slideIn 0.4s ease-out backwards;
 }
 
 .match-card:hover {
-  background: rgba(30, 41, 59, 0.8);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(22, 28, 45, 0.85);
+  border-color: rgba(var(--primary-rgb), 0.3);
+  box-shadow: 0 8px 20px -8px rgba(var(--gradient-start-rgb), 0.15);
 }
 
 .match-datetime {
