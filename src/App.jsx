@@ -382,22 +382,6 @@ function App() {
     }
   }, [activeTab, news.length]);
 
-  // Desplazar automáticamente el calendario horizontal móvil al día seleccionado
-  useEffect(() => {
-    if (activeTab === 'partidos') {
-      const timer = setTimeout(() => {
-        const selectedBtn = document.querySelector('.calendar-day-btn.selected');
-        if (selectedBtn) {
-          selectedBtn.scrollIntoView({
-            behavior: 'auto',
-            block: 'nearest',
-            inline: 'center'
-          });
-        }
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [activeTab, visibleDates]);
 
   const mergedMatches = useMemo(() => {
     return db.matches.map(match => {
@@ -903,6 +887,23 @@ function App() {
 
   const [visibleDates, setVisibleDates] = useState([getInitialDate()]);
 
+  // Desplazar automáticamente el calendario horizontal móvil al día seleccionado
+  useEffect(() => {
+    if (activeTab === 'partidos') {
+      const timer = setTimeout(() => {
+        const selectedBtn = document.querySelector('.calendar-day-btn.selected');
+        if (selectedBtn) {
+          selectedBtn.scrollIntoView({
+            behavior: 'auto',
+            block: 'nearest',
+            inline: 'center'
+          });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab, visibleDates]);
+
   const filteredMatches = useMemo(() => {
     let matches = mergedMatches;
     
@@ -1045,12 +1046,12 @@ function App() {
                               <th className="pos-col">#</th>
                               <th>Selección</th>
                               <th className="num-col">PJ</th>
-                              <th className="num-col hide-mobile">G</th>
-                              <th className="num-col hide-mobile">E</th>
-                              <th className="num-col hide-mobile">P</th>
-                              <th className="num-col hide-mobile">GF</th>
-                              <th className="num-col hide-mobile">GC</th>
-                              <th className="num-col hide-mobile">DG</th>
+                              <th className="num-col">G</th>
+                              <th className="num-col">E</th>
+                              <th className="num-col">P</th>
+                              <th className="num-col">GF</th>
+                              <th className="num-col">GC</th>
+                              <th className="num-col">DG</th>
                               <th className="pts-col">Pts</th>
                             </tr>
                           </thead>
@@ -1072,12 +1073,12 @@ function App() {
                                     </div>
                                   </td>
                                   <td className="num-col">{teamStat.pj}</td>
-                                  <td className="num-col hide-mobile">{teamStat.pg}</td>
-                                  <td className="num-col hide-mobile">{teamStat.pe}</td>
-                                  <td className="num-col hide-mobile">{teamStat.pp}</td>
-                                  <td className="num-col hide-mobile">{teamStat.gf}</td>
-                                  <td className="num-col hide-mobile">{teamStat.gc}</td>
-                                  <td className="num-col hide-mobile">{teamStat.dg > 0 ? `+${teamStat.dg}` : teamStat.dg}</td>
+                                  <td className="num-col">{teamStat.pg}</td>
+                                  <td className="num-col">{teamStat.pe}</td>
+                                  <td className="num-col">{teamStat.pp}</td>
+                                  <td className="num-col">{teamStat.gf}</td>
+                                  <td className="num-col">{teamStat.gc}</td>
+                                  <td className="num-col">{teamStat.dg > 0 ? `+${teamStat.dg}` : teamStat.dg}</td>
                                   <td className="pts-col">{teamStat.pts}</td>
                                 </tr>
                               );
