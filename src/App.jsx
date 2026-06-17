@@ -395,12 +395,33 @@ function App() {
         );
       });
 
-      if (apiMatch && apiMatch.time_elapsed !== 'notstarted') {
+      if (apiMatch) {
+        const hasStarted = apiMatch.time_elapsed !== 'notstarted';
+        let localTime = match.time;
+        let localDate = match.date;
+
+        if (apiMatch.date) {
+          try {
+            const matchDate = new Date(apiMatch.date);
+            // Formatear la hora local en formato HH:MM
+            localTime = matchDate.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
+            
+            // Formatear la fecha local en formato "Día N de Mes" (ej: "Miércoles 17 de junio")
+            const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+            localDate = `${days[matchDate.getDay()]} ${matchDate.getDate()} de ${months[matchDate.getMonth()]}`;
+          } catch (e) {
+            console.error('Error parsing apiMatch date:', e);
+          }
+        }
+
         return {
           ...match,
-          score1: apiMatch.home_score,
-          score2: apiMatch.away_score,
-          isLive: apiMatch.finished === 'FALSE',
+          time: localTime,
+          date: localDate,
+          score1: hasStarted ? apiMatch.home_score : undefined,
+          score2: hasStarted ? apiMatch.away_score : undefined,
+          isLive: hasStarted && apiMatch.finished === 'FALSE',
           timeElapsed: apiMatch.time_elapsed,
           venue: apiMatch.venue || match.location,
           homeTeamId: apiMatch.home_team_id,
@@ -859,9 +880,9 @@ function App() {
   // Fechas únicas para el calendario
   const uniqueDates = useMemo(() => {
     const dates = new Set();
-    db.matches.forEach(m => dates.add(m.date));
+    mergedMatches.forEach(m => dates.add(m.date));
     return Array.from(dates);
-  }, []);
+  }, [mergedMatches]);
 
   // Helper to construct today's date in local language format (e.g. "Viernes 12 de junio")
   const getTodayDateString = () => {
