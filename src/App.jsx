@@ -41,17 +41,35 @@ function MatchCard({ match, searchTerm, isExpanded, onToggleExpand }) {
     return '⏱️';
   };
 
+  const isFinished = match.score1 !== undefined && !match.isLive;
+
   return (
-    <div className={`match-card ${match.score1 !== undefined ? 'result-card' : ''}`}>
+    <div className={`match-card ${match.score1 !== undefined ? 'result-card' : ''} ${match.isLive ? 'live-card' : ''} ${isFinished ? 'finished-card' : ''}`}>
+      {/* Status banner at top */}
+      {match.isLive && (
+        <div className="match-status-banner live-banner">
+          <span className="live-dot"></span>
+          <span>EN VIVO</span>
+          {match.timeElapsed && match.timeElapsed !== 'notstarted' && (
+            <span className="live-elapsed">
+              {match.timeElapsed.toLowerCase().includes('ht') || match.timeElapsed.toLowerCase().includes('half')
+                ? '— ENTRETIEMPO ☕'
+                : `— MIN ${match.timeElapsed}`}
+            </span>
+          )}
+        </div>
+      )}
+      {isFinished && (
+        <div className="match-status-banner finished-banner">
+          <span>✔</span>
+          <span>FINALIZADO</span>
+        </div>
+      )}
+
       <div className="match-datetime">
         <div className="match-date">{match.date}</div>
         <div className="match-time-container">
           <span className="match-time">{match.time} hrs</span>
-          {match.isLive && (
-            <span className="live-badge">
-              <span className="live-dot"></span> EN VIVO {match.timeElapsed}
-            </span>
-          )}
         </div>
       </div>
       
@@ -1142,33 +1160,103 @@ function App() {
 
             <div className="matches-content">
               {filteredMatches.length > 0 ? (
-                <>
-                  <div className="matches-count-indicator">
-                    Mostrando <strong>{filteredMatches.length}</strong> de <strong>{mergedMatches.length}</strong> partidos de la fase de grupos
-                  </div>
-                  <div className="calendar-list">
-                    {filteredMatches.map((match) => {
-                      const matchKey = `${match.team1}_${match.team2}`;
-                      return (
-                        <MatchCard
-                          key={matchKey}
-                          match={match}
-                          searchTerm={searchTerm}
-                          isExpanded={!!expandedMatches[matchKey]}
-                          onToggleExpand={() => toggleMatchExpanded(matchKey)}
-                        />
-                      );
-                    })}
-                  </div>
+                (() => {
+                  const today = new Date();
+                  const todayStr = getTodayDateString();
 
-                  {!searchTerm.trim() && visibleDates[visibleDates.length - 1] !== uniqueDates[uniqueDates.length - 1] && (
-                    <div className="load-more-container">
-                      <button className="load-more-btn" onClick={loadMoreDates}>
-                        Cargar siguientes partidos
-                      </button>
-                    </div>
-                  )}
-                </>
+                  // Separate into groups
+                  const liveMatches = filteredMatches.filter(m => m.isLive);
+                  const finishedToday = filteredMatches.filter(m => {
+                    const isFinished = m.score1 !== undefined && !m.isLive;
+                    return isFinished && m.date === todayStr;
+                  });
+                  const upcomingMatches = filteredMatches.filter(m => {
+                    const isFinished = m.score1 !== undefined && !m.isLive;
+                    return !m.isLive && !isFinished;
+                  });
+
+                  // Featured match: live or first upcoming today
+                  const featuredMatch = liveMatches.length > 0
+                    ? liveMatches[0]
+                    : upcomingMatches.find(m => m.date === todayStr) || upcomingMatches[0];
+
+                  const renderCard = (match) => {
+                    const matchKey = `${match.team1}_${match.team2}`;
+                    return (
+                      <MatchCard
+                        key={matchKey}
+                        match={match}
+                        searchTerm={searchTerm}
+                        isExpanded={!!expandedMatches[matchKey]}
+                        onToggleExpand={() => toggleMatchExpanded(matchKey)}
+                      />
+                    );
+                  };
+
+                  // If search is active, just show flat list with count
+                  if (searchTerm.trim()) {
+                    return (
+                      <>
+                        <div className="matches-count-indicator">
+                          Mostrando <strong>{filteredMatches.length}</strong> de <strong>{mergedMatches.length}</strong> partidos de la fase de grupos
+                        </div>
+                        <div className="calendar-list">
+                          {filteredMatches.map(renderCard)}
+                        </div>
+                      </>
+                    );
+                  }
+
+                  return (
+                    <>
+                      {/* Featured match (live or next) */}
+                      {featuredMatch && (
+                        <div className="featured-match-section">
+                          <div className="section-divider-label">
+                            <span className={featuredMatch.isLive ? 'divider-live' : 'divider-next'}>
+                              {featuredMatch.isLive ? '🔴 EN VIVO' : '⏩ Próximo partido'}
+                            </span>
+                          </div>
+                          <div className="featured-match-wrapper">
+                            {renderCard(featuredMatch)}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Matches played today (excluding featured if it's live) */}
+                      {finishedToday.length > 0 && (
+                        <div className="matches-section">
+                          <div className="section-divider-label">
+                            <span className="divider-finished">📋 Partidos jugados hoy</span>
+                          </div>
+                          <div className="calendar-list">
+                            {finishedToday.map(renderCard)}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Upcoming matches (excluding featured) */}
+                      {upcomingMatches.filter(m => m !== featuredMatch).length > 0 && (
+                        <div className="matches-section">
+                          <div className="section-divider-label">
+                            <span className="divider-upcoming">🗓️ Próximos partidos</span>
+                          </div>
+                          <div className="calendar-list">
+                            {upcomingMatches.filter(m => m !== featuredMatch).map(renderCard)}
+                          </div>
+                        </div>
+                      )}
+
+                      {!searchTerm.trim() && visibleDates[visibleDates.length - 1] !== uniqueDates[uniqueDates.length - 1] && (
+                        <div className="load-more-container">
+                          <button className="load-more-btn" onClick={loadMoreDates}>
+                            Cargar siguientes partidos
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()
               ) : (
                 <div className="empty-state">
                   No se encontraron partidos para la selección ingresada.
