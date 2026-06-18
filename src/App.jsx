@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import db from './data/db.json';
 import { normalizeString, getFlag, TEAM_ENG_TO_ESP } from './utils';
 
@@ -107,15 +107,17 @@ function MatchCard({ match, searchTerm, isExpanded, onToggleExpand }) {
           <div className="home-scorers">
             {homeGoals.map((g, i) => (
               <div key={i} className="scorer">
-                {g.athlete} ({g.clock})
+                <span>⚽ {g.athlete} <span className="scorer-clock">({g.clock})</span></span>
+                {g.assist && <span className="scorer-assist">🅰️ {g.assist}</span>}
               </div>
             ))}
           </div>
-          <div className="scorer-icon-divider">⚽</div>
+          <div className="scorer-icon-divider">|</div>
           <div className="away-scorers">
             {awayGoals.map((g, i) => (
               <div key={i} className="scorer">
-                ({g.clock}) {g.athlete}
+                <span>⚽ {g.athlete} <span className="scorer-clock">({g.clock})</span></span>
+                {g.assist && <span className="scorer-assist">🅰️ {g.assist}</span>}
               </div>
             ))}
           </div>
@@ -137,7 +139,9 @@ function MatchCard({ match, searchTerm, isExpanded, onToggleExpand }) {
                     <span className="timeline-time">{d.clock}</span>
                     <span className="timeline-icon">{getTimelineIcon(d.type)}</span>
                     <span className="timeline-text">
-                      <strong>{d.athlete}</strong> ({d.team_id === match.homeTeamId || TEAM_ENG_TO_ESP[match.home_team_name_en] === TEAM_ENG_TO_ESP[d.team_id] ? match.team1 : match.team2}) - {d.type}
+                      <strong>{d.athlete}</strong>
+                      {d.assist && <span className="timeline-assist"> (🅰️ {d.assist})</span>}
+                      {' '}({d.team_id === match.homeTeamId || TEAM_ENG_TO_ESP[match.home_team_name_en] === TEAM_ENG_TO_ESP[d.team_id] ? match.team1 : match.team2}) — {d.type}
                     </span>
                   </div>
                 ))}
@@ -988,25 +992,83 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Draggable ticker logic
+  const tickerRef = useRef(null);
+  const isDragging = useRef(false);
+  const dragStartX = useRef(0);
+  const scrollStartLeft = useRef(0);
+  const autoScrollRef = useRef(null);
+  const AUTO_SCROLL_SPEED = 0.6; // px per frame
+
+  const startAutoScroll = useCallback(() => {
+    if (autoScrollRef.current) return;
+    autoScrollRef.current = requestAnimationFrame(function tick() {
+      if (!isDragging.current && tickerRef.current) {
+        tickerRef.current.scrollLeft += AUTO_SCROLL_SPEED;
+        // Loop when reaching halfway (content is doubled)
+        const half = tickerRef.current.scrollWidth / 2;
+        if (tickerRef.current.scrollLeft >= half) {
+          tickerRef.current.scrollLeft -= half;
+        }
+      }
+      autoScrollRef.current = requestAnimationFrame(tick);
+    });
+  }, []);
+
+  useEffect(() => {
+    startAutoScroll();
+    return () => {
+      if (autoScrollRef.current) cancelAnimationFrame(autoScrollRef.current);
+    };
+  }, [startAutoScroll]);
+
+  const handlePointerDown = (e) => {
+    isDragging.current = true;
+    dragStartX.current = e.clientX;
+    scrollStartLeft.current = tickerRef.current.scrollLeft;
+    tickerRef.current.setPointerCapture(e.pointerId);
+    tickerRef.current.style.cursor = 'grabbing';
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDragging.current) return;
+    const dx = e.clientX - dragStartX.current;
+    tickerRef.current.scrollLeft = scrollStartLeft.current - dx;
+  };
+
+  const handlePointerUp = () => {
+    isDragging.current = false;
+    if (tickerRef.current) tickerRef.current.style.cursor = 'grab';
+  };
+
   return (
     <>
       <div className="ticker-wrap">
-        <div className="ticker">
-          {[...tickerGames, ...tickerGames].map((game, idx) => (
-            <div className="ticker-item" key={idx}>
-              <span style={{ fontSize: '0.7rem', color: game.isLive ? '#ef4444' : '#64748b', marginRight: '0.55rem', fontWeight: 'bold' }}>
-                {game.statusText}
-              </span>
-              {game.isLive && <span className="ticker-live-dot"></span>}
-              <span>{game.homeFlag} {game.home}</span>
-              {game.finished || game.isLive ? (
-                <span className="ticker-score-tag">{game.score}</span>
-              ) : (
-                <strong> {game.score} </strong>
-              )}
-              <span>{game.away} {game.awayFlag}</span>
-            </div>
-          ))}
+        <div
+          className="ticker-drag"
+          ref={tickerRef}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
+        >
+          <div className="ticker-inner">
+            {[...tickerGames, ...tickerGames].map((game, idx) => (
+              <div className="ticker-item" key={idx}>
+                <span style={{ fontSize: '0.7rem', color: game.isLive ? '#ef4444' : '#64748b', marginRight: '0.55rem', fontWeight: 'bold' }}>
+                  {game.statusText}
+                </span>
+                {game.isLive && <span className="ticker-live-dot"></span>}
+                <span>{game.homeFlag} {game.home}</span>
+                {game.finished || game.isLive ? (
+                  <span className="ticker-score-tag">{game.score}</span>
+                ) : (
+                  <strong> {game.score} </strong>
+                )}
+                <span>{game.away} {game.awayFlag}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

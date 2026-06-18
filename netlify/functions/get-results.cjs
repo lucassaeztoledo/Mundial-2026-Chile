@@ -63,6 +63,7 @@ exports.handler = async function (event, context) {
                 clock: d.clock?.displayValue || '',
                 team_id: d.team?.id || '',
                 athlete: d.athletesInvolved?.[0]?.displayName || '',
+                assist: d.athletesInvolved?.[1]?.displayName || '',
                 scoringPlay: d.scoringPlay || false,
                 redCard: d.redCard || false,
                 yellowCard: d.yellowCard || false

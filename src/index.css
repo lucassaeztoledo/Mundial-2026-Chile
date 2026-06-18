@@ -801,7 +801,26 @@ body {
 }
 
 .scorer {
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.scorer-clock {
+  font-size: 0.72rem;
+  opacity: 0.65;
+}
+
+.scorer-assist {
+  font-size: 0.72rem;
+  color: #60a5fa;
+  opacity: 0.85;
+}
+
+.timeline-assist {
+  color: #60a5fa;
+  font-size: 0.85em;
 }
 
 /* Toggle Expand Button */
@@ -1305,7 +1324,7 @@ body {
   padding-top: 35px;
 }
 
-/* Top scrolling ticker marquee */
+/* Top draggable ticker */
 .ticker-wrap {
   width: 100%;
   overflow: hidden;
@@ -1322,14 +1341,29 @@ body {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
-.ticker {
-  display: flex;
-  white-space: nowrap;
-  animation: marquee 250s linear infinite;
+.ticker-drag {
+  width: 100%;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  cursor: grab;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.ticker:hover {
-  animation-play-state: paused;
+.ticker-drag::-webkit-scrollbar {
+  display: none;
+}
+
+.ticker-drag:active {
+  cursor: grabbing;
+}
+
+.ticker-inner {
+  display: flex;
+  white-space: nowrap;
+  width: max-content;
 }
 
 .ticker-item {
@@ -1368,16 +1402,12 @@ body {
   margin: 0 0.4rem;
 }
 
-@keyframes marquee {
-  0% { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(-50%, 0, 0); }
-}
-
 @keyframes pulse-live {
   0% { opacity: 0.5; }
   50% { opacity: 1; }
   100% { opacity: 0.5; }
 }
+
 
 /* Statistics Styles */
 .stats-grid {
