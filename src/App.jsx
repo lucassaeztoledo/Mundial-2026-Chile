@@ -359,15 +359,89 @@ function App() {
 
   useEffect(() => {
     const fetchResults = () => {
-      fetch('/.netlify/functions/get-results')
+      fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=20260611-20260719&limit=150')
         .then(res => {
           if (!res.ok) throw new Error('Error al cargar marcadores remotos');
           return res.json();
         })
-        .then(data => {
-          if (Array.isArray(data)) {
-            setApiMatches(data);
-          }
+        .then(parsedData => {
+          const events = parsedData.events || [];
+          const games = events.map(e => {
+            const comp = e.competitions?.[0];
+            if (!comp) return null;
+            
+            const home = comp.competitors?.find(c => c.homeAway === 'home');
+            const away = comp.competitors?.find(c => c.homeAway === 'away');
+            if (!home || !away) return null;
+
+            const isCompleted = e.status?.type?.completed || false;
+            const state = e.status?.type?.state;
+
+            let finished = 'FALSE';
+            let time_elapsed = 'notstarted';
+
+            if (state === 'pre') {
+              finished = 'FALSE';
+              time_elapsed = 'notstarted';
+            } else if (state === 'post' || isCompleted) {
+              finished = 'TRUE';
+              time_elapsed = e.status?.type?.shortDetail || 'FT';
+            } else if (state === 'in') {
+              finished = 'FALSE';
+              time_elapsed = e.status?.displayClock || 'Live';
+            }
+
+            const getStat = (competitor, name) => {
+              return competitor.statistics?.find(s => s.name === name)?.displayValue || '';
+            };
+
+            const homeStats = {
+              possession: getStat(home, 'possessionPct'),
+              shotsOnTarget: getStat(home, 'shotsOnTarget'),
+              totalShots: getStat(home, 'totalShots'),
+              fouls: getStat(home, 'foulsCommitted'),
+              corners: getStat(home, 'wonCorners')
+            };
+
+            const awayStats = {
+              possession: getStat(away, 'possessionPct'),
+              shotsOnTarget: getStat(away, 'shotsOnTarget'),
+              totalShots: getStat(away, 'totalShots'),
+              fouls: getStat(away, 'foulsCommitted'),
+              corners: getStat(away, 'wonCorners')
+            };
+
+            const details = comp.details?.map(d => {
+              return {
+                type: d.type?.text || '',
+                clock: d.clock?.displayValue || '',
+                team_id: d.team?.id || '',
+                athlete: d.athletesInvolved?.[0]?.displayName || '',
+                assist: d.athletesInvolved?.[1]?.displayName || '',
+                scoringPlay: d.scoringPlay || false,
+                redCard: d.redCard || false,
+                yellowCard: d.yellowCard || false
+              };
+            }) || [];
+
+            return {
+              date: e.date || '',
+              home_team_name_en: home.team?.name || home.team?.displayName || '',
+              away_team_name_en: away.team?.name || away.team?.displayName || '',
+              home_score: parseInt(home.score, 10) || 0,
+              away_score: parseInt(away.score, 10) || 0,
+              finished: finished,
+              time_elapsed: time_elapsed,
+              venue: comp.venue?.fullName || '',
+              home_team_id: home.team?.id || '',
+              away_team_id: away.team?.id || '',
+              details: details,
+              home_stats: homeStats,
+              away_stats: awayStats
+            };
+          }).filter(Boolean);
+
+          setApiMatches(games);
         })
         .catch(err => {
           console.warn('Usando base de datos estática como respaldo:', err);
@@ -385,15 +459,24 @@ function App() {
   useEffect(() => {
     if (activeTab === 'noticias' && news.length === 0) {
       setLoadingNews(true);
-      fetch('/.netlify/functions/get-news')
+      fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/news?lang=es&cc=es')
         .then(res => {
           if (!res.ok) throw new Error('Error al cargar noticias remotas');
           return res.json();
         })
-        .then(data => {
-          if (Array.isArray(data)) {
-            setNews(data);
-          }
+        .then(parsedData => {
+          const articles = parsedData.articles || [];
+          const newsList = articles.map(a => {
+            return {
+              id: a.id,
+              headline: a.headline || '',
+              description: a.description || '',
+              published: a.published || '',
+              url: a.links?.web?.href || '',
+              image: a.images?.[0]?.url || ''
+            };
+          });
+          setNews(newsList);
           setLoadingNews(false);
         })
         .catch(err => {
