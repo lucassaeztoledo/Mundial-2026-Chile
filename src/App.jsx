@@ -495,8 +495,10 @@ function App() {
         const homeEsp = TEAM_ENG_TO_ESP[g.home_team_name_en] || g.home_team_name_en;
         const awayEsp = TEAM_ENG_TO_ESP[g.away_team_name_en] || g.away_team_name_en;
         return (
-          normalizeString(homeEsp) === normalizeString(match.team1) &&
-          normalizeString(awayEsp) === normalizeString(match.team2)
+          (normalizeString(homeEsp) === normalizeString(match.team1) &&
+           normalizeString(awayEsp) === normalizeString(match.team2)) ||
+          (normalizeString(homeEsp) === normalizeString(match.team2) &&
+           normalizeString(awayEsp) === normalizeString(match.team1))
         );
       });
 
@@ -520,22 +522,25 @@ function App() {
           }
         }
 
+        const homeEsp = TEAM_ENG_TO_ESP[apiMatch.home_team_name_en] || apiMatch.home_team_name_en;
+        const isSwapped = normalizeString(homeEsp) !== normalizeString(match.team1);
+
         return {
           ...match,
           time: localTime,
           date: localDate,
-          score1: hasStarted ? apiMatch.home_score : undefined,
-          score2: hasStarted ? apiMatch.away_score : undefined,
+          score1: hasStarted ? (isSwapped ? apiMatch.away_score : apiMatch.home_score) : undefined,
+          score2: hasStarted ? (isSwapped ? apiMatch.home_score : apiMatch.away_score) : undefined,
           isLive: hasStarted && apiMatch.finished === 'FALSE',
           timeElapsed: apiMatch.time_elapsed,
           venue: apiMatch.venue || match.location,
-          homeTeamId: apiMatch.home_team_id,
-          awayTeamId: apiMatch.away_team_id,
+          homeTeamId: isSwapped ? apiMatch.away_team_id : apiMatch.home_team_id,
+          awayTeamId: isSwapped ? apiMatch.home_team_id : apiMatch.away_team_id,
           details: apiMatch.details || [],
-          homeStats: apiMatch.home_stats || {},
-          awayStats: apiMatch.away_stats || {},
-          home_team_name_en: apiMatch.home_team_name_en,
-          away_team_name_en: apiMatch.away_team_name_en
+          homeStats: isSwapped ? (apiMatch.away_stats || {}) : (apiMatch.home_stats || {}),
+          awayStats: isSwapped ? (apiMatch.home_stats || {}) : (apiMatch.away_stats || {}),
+          home_team_name_en: isSwapped ? apiMatch.away_team_name_en : apiMatch.home_team_name_en,
+          away_team_name_en: isSwapped ? apiMatch.home_team_name_en : apiMatch.away_team_name_en
         };
       }
       return match;
