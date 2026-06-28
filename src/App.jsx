@@ -1453,26 +1453,26 @@ function App() {
         )}
 
         {activeTab === 'fase-eliminatoria' && (
-          <section className="bracket-section">
-            <h2 className="section-title">Fase Eliminatoria</h2>
-            <div className="bracket-scroll-hint">
+          <section className="bracket-section relative w-full min-h-[80vh] text-slate-100 bg-slate-950 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)_inset] rounded-3xl p-4 md:p-8 mt-6 border border-slate-800/60 font-knockout">
+            <h2 className="section-title text-4xl md:text-5xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-500 mb-8 z-10 relative">Fase Eliminatoria</h2>
+            <div className="bracket-scroll-hint text-cyan-300/80 text-lg font-medium tracking-widest animate-pulse z-10 relative mb-4">
               ← Desliza horizontalmente para ver las llaves →
             </div>
             
-            <div className="bracket-wrapper">
+            <div className="bracket-wrapper relative z-10">
               <div className="bracket-container">
                 {/* 1. Round of 32 Left */}
                 <div className="bracket-column">
                   <div className="bracket-column-title">Dieciseisavos (Izq)</div>
                   <div className="bracket-column-matches">
-                    <BracketMatch match={apiMatches[72]} matchNumber={1} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[74]} matchNumber={3} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[73]} matchNumber={2} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[76]} matchNumber={5} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[82]} matchNumber={11} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[83]} matchNumber={12} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[80]} matchNumber={9} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[81]} matchNumber={10} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[72]} matchNumber={1} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[74]} matchNumber={3} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[73]} matchNumber={2} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[76]} matchNumber={5} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[82]} matchNumber={11} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[83]} matchNumber={12} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[80]} matchNumber={9} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[81]} matchNumber={10} resolveTeamName={resolveTeamName} />
                   </div>
                 </div>
 
@@ -1480,10 +1480,10 @@ function App() {
                 <div className="bracket-column">
                   <div className="bracket-column-title">Octavos (Izq)</div>
                   <div className="bracket-column-matches">
-                    <BracketMatch match={apiMatches[88]} matchNumber={17} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[89]} matchNumber={18} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[92]} matchNumber={21} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[93]} matchNumber={22} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[88]} matchNumber={17} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[89]} matchNumber={18} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[92]} matchNumber={21} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[93]} matchNumber={22} resolveTeamName={resolveTeamName} />
                   </div>
                 </div>
 
@@ -1491,8 +1491,8 @@ function App() {
                 <div className="bracket-column">
                   <div className="bracket-column-title">Cuartos (Izq)</div>
                   <div className="bracket-column-matches">
-                    <BracketMatch match={apiMatches[96]} matchNumber={25} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[97]} matchNumber={26} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[96]} matchNumber={25} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[97]} matchNumber={26} resolveTeamName={resolveTeamName} />
                   </div>
                 </div>
 
@@ -1500,7 +1500,7 @@ function App() {
                 <div className="bracket-column">
                   <div className="bracket-column-title">Semifinal (Izq)</div>
                   <div className="bracket-column-matches">
-                    <BracketMatch match={apiMatches[100]} matchNumber={29} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[100]} matchNumber={29} resolveTeamName={resolveTeamName} />
                   </div>
                 </div>
 
@@ -1514,11 +1514,11 @@ function App() {
                   {/* Champion Banner */}
                   <div className="champion-card">
                     <div className="champion-title">Campeón del Mundo</div>
-                    {apiMatches[103] && apiMatches[103].finished === 'TRUE' ? (
+                    {mergedMatches[103] && mergedMatches[103].finished === 'TRUE' ? (
                       (() => {
-                        const winnerEn = apiMatches[103].home_score > apiMatches[103].away_score 
-                          ? apiMatches[103].home_team_name_en 
-                          : apiMatches[103].away_team_name_en;
+                        const winnerEn = mergedMatches[103].home_score > mergedMatches[103].away_score 
+                          ? mergedMatches[103].home_team_name_en 
+                          : mergedMatches[103].away_team_name_en;
                         const winner = resolveTeamName(winnerEn);
                         return (
                           <div className="champion-team">
@@ -1537,7 +1537,7 @@ function App() {
                   <div>
                     <div className="bracket-column-title" style={{ border: 'none', marginBottom: '0.25rem' }}>Gran Final</div>
                     <div className="bracket-match-card final-match-box">
-                      <BracketMatch match={apiMatches[103]} matchNumber={32} resolveTeamName={resolveTeamName} />
+                      <BracketMatch match={mergedMatches[103]} matchNumber={32} resolveTeamName={resolveTeamName} />
                     </div>
                   </div>
 
@@ -1545,7 +1545,7 @@ function App() {
                   <div>
                     <div className="bracket-column-title" style={{ border: 'none', marginBottom: '0.25rem', color: '#94a3b8' }}>Tercer Lugar</div>
                     <div className="bracket-match-card third-place-box">
-                      <BracketMatch match={apiMatches[102]} matchNumber={31} resolveTeamName={resolveTeamName} />
+                      <BracketMatch match={mergedMatches[102]} matchNumber={31} resolveTeamName={resolveTeamName} />
                     </div>
                   </div>
                 </div>
@@ -1554,7 +1554,7 @@ function App() {
                 <div className="bracket-column">
                   <div className="bracket-column-title">Semifinal (Der)</div>
                   <div className="bracket-column-matches">
-                    <BracketMatch match={apiMatches[101]} matchNumber={30} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[101]} matchNumber={30} resolveTeamName={resolveTeamName} />
                   </div>
                 </div>
 
@@ -1562,8 +1562,8 @@ function App() {
                 <div className="bracket-column">
                   <div className="bracket-column-title">Cuartos (Der)</div>
                   <div className="bracket-column-matches">
-                    <BracketMatch match={apiMatches[98]} matchNumber={27} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[99]} matchNumber={28} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[98]} matchNumber={27} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[99]} matchNumber={28} resolveTeamName={resolveTeamName} />
                   </div>
                 </div>
 
@@ -1571,10 +1571,10 @@ function App() {
                 <div className="bracket-column">
                   <div className="bracket-column-title">Octavos (Der)</div>
                   <div className="bracket-column-matches">
-                    <BracketMatch match={apiMatches[90]} matchNumber={19} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[91]} matchNumber={20} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[95]} matchNumber={24} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[94]} matchNumber={23} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[90]} matchNumber={19} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[91]} matchNumber={20} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[95]} matchNumber={24} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[94]} matchNumber={23} resolveTeamName={resolveTeamName} />
                   </div>
                 </div>
 
@@ -1582,14 +1582,14 @@ function App() {
                 <div className="bracket-column">
                   <div className="bracket-column-title">Dieciseisavos (Der)</div>
                   <div className="bracket-column-matches">
-                    <BracketMatch match={apiMatches[75]} matchNumber={4} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[77]} matchNumber={6} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[78]} matchNumber={7} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[79]} matchNumber={8} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[84]} matchNumber={13} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[86]} matchNumber={15} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[85]} matchNumber={14} resolveTeamName={resolveTeamName} />
-                    <BracketMatch match={apiMatches[87]} matchNumber={16} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[75]} matchNumber={4} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[77]} matchNumber={6} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[78]} matchNumber={7} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[79]} matchNumber={8} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[84]} matchNumber={13} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[86]} matchNumber={15} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[85]} matchNumber={14} resolveTeamName={resolveTeamName} />
+                    <BracketMatch match={mergedMatches[87]} matchNumber={16} resolveTeamName={resolveTeamName} />
                   </div>
                 </div>
               </div>

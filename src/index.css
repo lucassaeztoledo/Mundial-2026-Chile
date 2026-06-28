@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
   --bg-color: #0b0f19;
   --text-color: #f8fafc;
@@ -190,6 +192,120 @@ body {
   gap: 0.5rem;
   font-size: 1.1rem;
 }
+
+/* Knockout Phase Specific Styles */
+.font-knockout {
+  font-family: 'Teko', sans-serif;
+}
+
+.bracket-section {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 2rem;
+  margin-top: 1rem;
+  /* 4k Dark Animated Background with movement */
+  background: 
+    radial-gradient(circle at 15% 50%, rgba(14, 165, 233, 0.15), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(99, 102, 241, 0.15), transparent 25%),
+    linear-gradient(120deg, #050811, #0a0d18, #050811);
+  background-size: 200% 200%;
+  animation: gradientMove 15s ease infinite;
+  box-shadow: 0 0 50px rgba(0,0,0,0.5) inset;
+}
+
+.bracket-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjAwIDIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZmlsdGVyIGlkPSJub2lzZUZpbHRlciI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuNjUiIG51bU9jdGF2ZXM9IjMiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWx0ZXI9InVybCgibm9pc2VGaWx0ZXIpIiBvcGFjaXR5PSIwLjA1Ii8+PC9zdmc+');
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+  mix-blend-mode: overlay;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Moving Trophy Animation */
+.trophy-image {
+  animation: trophyFloat 4s ease-in-out infinite, trophyGlow 3s alternate infinite;
+  filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.6));
+  z-index: 10;
+  position: relative;
+}
+
+@keyframes trophyFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-15px) scale(1.05); }
+}
+
+@keyframes trophyGlow {
+  0% { filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.4)) brightness(1); }
+  100% { filter: drop-shadow(0 0 30px rgba(245, 158, 11, 0.8)) brightness(1.2); }
+}
+
+/* Make Bracket Typography Bigger for Teko */
+.bracket-team-name {
+  font-family: 'Teko', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+}
+
+.bracket-match-info {
+  font-family: 'Outfit', sans-serif;
+}
+
+.bracket-team-score {
+  font-family: 'Teko', sans-serif;
+  font-size: 1.7rem;
+  font-weight: 600;
+}
+
+.bracket-column-title {
+  font-family: 'Teko', sans-serif;
+  font-size: 1.8rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.champion-title {
+  font-family: 'Teko', sans-serif;
+  font-size: 2.2rem;
+  letter-spacing: 1px;
+  color: #fbbf24;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+.champion-team {
+  font-family: 'Teko', sans-serif;
+  font-size: 2.5rem;
+  letter-spacing: 1px;
+}
+
+/* Adjust layout so it looks better with the new animated background */
+.bracket-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+.bracket-match-card {
+  background: rgba(11, 15, 25, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.bracket-scroll-hint {
+  z-index: 2;
+  position: relative;
+}
+
 
 /* Partidos Section Layout */
 .partidos-section {
